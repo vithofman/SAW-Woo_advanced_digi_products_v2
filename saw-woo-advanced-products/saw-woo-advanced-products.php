@@ -184,6 +184,7 @@ final class Plugin {
             Frontend\Shortcodes::init();
         }
 
+        // ✅ OPRAVA: Přidán Frontend\ prefix
         if ( class_exists( Frontend\Templates::class ) ) {
             Frontend\Templates::init();
         }
@@ -242,31 +243,23 @@ final class Plugin {
 Plugin::instance();
 
 /**
- * Activation hook - create database tables and flush rewrite rules.
+ * Activation hook - create database tables.
  */
 register_activation_hook( __FILE__, function() {
-    // Require Database class
     require_once __DIR__ . '/inc/Core/Database.php';
-    
-    // Create tables
     \SAW\WAP\Core\Database::create_tables();
     
-    // NOVĚ PŘIDÁNO: Flush rewrite rules pro /watch/ endpoint
-
-    
-    // Flush rules
-    flush_rewrite_rules();
-    
     if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-        error_log( 'SAW-WAP: Plugin activated, rewrite rules flushed' );
+        error_log( 'SAW-WAP: Plugin activated, database tables created' );
     }
 } );
 
-
 /**
- * Deactivation hook - flush rewrite rules.
+ * Deactivation hook.
  * NOTE: We do NOT drop tables on deactivation!
  */
 register_deactivation_hook( __FILE__, function() {
-    flush_rewrite_rules();
+    if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+        error_log( 'SAW-WAP: Plugin deactivated' );
+    }
 } );

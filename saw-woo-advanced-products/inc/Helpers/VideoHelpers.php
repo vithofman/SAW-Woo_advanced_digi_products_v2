@@ -15,12 +15,23 @@ class VideoHelpers {
 	/**
 	 * Render video embed iframe.
 	 *
-	 * @param string $url Video URL
-	 * @param string $provider Provider (youtube/vimeo/custom)
-	 * @param string $title Video title
+	 * @param string|null $url Video URL
+	 * @param string|null $provider Provider (youtube/vimeo/custom)
+	 * @param string|null $title Video title
 	 * @return string HTML iframe
 	 */
-	public static function render_video_embed( $url, $provider, $title ) {
+	public static function render_video_embed( $url, $provider = null, $title = '' ): string {
+		
+		// Handle NULL or empty URL
+		if ( empty( $url ) ) {
+			return sprintf(
+				'<div class="saw-video-error"><p>%s</p></div>',
+				esc_html__( 'URL videa není nastaveno.', 'saw-wap' )
+			);
+		}
+		
+		$url = (string) $url;
+		$title = ! empty( $title ) ? (string) $title : 'Video';
 		
 		// Auto-detect provider if empty
 		if ( empty( $provider ) || 'custom' === $provider ) {
@@ -76,7 +87,7 @@ class VideoHelpers {
 	 * @param string $url Video URL
 	 * @return string Provider
 	 */
-	private static function detect_provider( $url ) {
+	private static function detect_provider( string $url ): string {
 		if ( strpos( $url, 'youtube.com' ) !== false || strpos( $url, 'youtu.be' ) !== false ) {
 			return 'youtube';
 		}
@@ -94,7 +105,7 @@ class VideoHelpers {
 	 * @param string $url YouTube URL
 	 * @return string|null Video ID
 	 */
-	public static function extract_youtube_id( $url ) {
+	public static function extract_youtube_id( string $url ): ?string {
 		// Pattern 1: youtube.com/watch?v=VIDEO_ID
 		if ( preg_match( '/[?&]v=([a-zA-Z0-9_-]{11})/', $url, $matches ) ) {
 			return $matches[1];
@@ -119,7 +130,7 @@ class VideoHelpers {
 	 * @param string $url Vimeo URL
 	 * @return string|null Video ID
 	 */
-	public static function extract_vimeo_id( $url ) {
+	public static function extract_vimeo_id( string $url ): ?string {
 		// Pattern 1: vimeo.com/VIDEO_ID
 		if ( preg_match( '/vimeo\.com\/(\d+)/', $url, $matches ) ) {
 			return $matches[1];
@@ -139,8 +150,8 @@ class VideoHelpers {
 	 * @param int $seconds Duration in seconds
 	 * @return string Formatted duration
 	 */
-	public static function format_duration( $seconds ) {
-		$seconds = (int) $seconds;
+	public static function format_duration( int $seconds ): string {
+		$seconds = abs( $seconds ); // Ensure positive
 		
 		if ( $seconds < 60 ) {
 			return sprintf( '%d sec', $seconds );
@@ -164,12 +175,21 @@ class VideoHelpers {
 	/**
 	 * Format access expiration countdown
 	 *
-	 * @param string $expires_datetime MySQL datetime
+	 * @param string|null $expires_datetime MySQL datetime
 	 * @return string Formatted text
 	 */
-	public static function format_access_expires( $expires_datetime ) {
+	public static function format_access_expires( $expires_datetime ): string {
+		
+		if ( empty( $expires_datetime ) ) {
+			return 'Trvalý přístup';
+		}
+		
 		$now = current_time( 'timestamp' );
 		$expires = strtotime( $expires_datetime );
+		
+		if ( false === $expires ) {
+			return 'Neplatné datum';
+		}
 
 		$diff_seconds = $expires - $now;
 		$days_left = (int) floor( $diff_seconds / DAY_IN_SECONDS );
@@ -178,8 +198,10 @@ class VideoHelpers {
 			return sprintf( 'Přístup do: %d dní', $days_left );
 		} elseif ( $days_left >= 7 ) {
 			return sprintf( 'Brzy vyprší: %d dní', $days_left );
+		} elseif ( $days_left > 0 ) {
+			return sprintf( 'POZOR: Vyprší za %d dní', $days_left );
 		} else {
-			return sprintf( 'POZOR: Vyprší za %d dní', max( 0, $days_left ) );
+			return 'Přístup vypršel';
 		}
 	}
 
@@ -191,12 +213,8 @@ class VideoHelpers {
 	 * @param int $video_index Video index
 	 * @return bool True if completed
 	 */
-	public static function is_video_completed( $user_id, $product_id, $video_index ) {
+	public static function is_video_completed( int $user_id, int $product_id, int $video_index ): bool {
 		global $wpdb;
-
-		$user_id = (int) $user_id;
-		$product_id = (int) $product_id;
-		$video_index = (int) $video_index;
 
 		$sessions_table = $wpdb->prefix . 'saw_video_watch_sessions';
 		$tokens_table = $wpdb->prefix . 'saw_video_access_tokens';
@@ -227,12 +245,8 @@ class VideoHelpers {
 	 * @param int $video_index Video index
 	 * @return string|null Token or null
 	 */
-	public static function get_user_video_token( $user_id, $product_id, $video_index ) {
+	public static function get_user_video_token( int $user_id, int $product_id, int $video_index ): ?string {
 		global $wpdb;
-
-		$user_id = (int) $user_id;
-		$product_id = (int) $product_id;
-		$video_index = (int) $video_index;
 
 		$table_name = $wpdb->prefix . 'saw_video_access_tokens';
 
@@ -251,6 +265,6 @@ class VideoHelpers {
 			)
 		);
 
-		return $token ? $token : null;
+		return $token ? (string) $token : null;
 	}
 }

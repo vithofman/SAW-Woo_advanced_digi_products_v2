@@ -35,67 +35,92 @@ class Shortcodes {
 	public static function render_video_course_player( $atts ): string {
 		
 		// Get token from URL
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$token = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
 		
-		// ✅ OPRAVA: Jen trim whitespace, NE lomítka
-		$token = trim( $token );
+		// Trim whitespace AND trailing slashes
+		$token = trim( $token, " \t\n\r\0\x0B/" );
 		
 		if ( empty( $token ) ) {
 			return self::render_error( 'missing_token' );
 		}
 		
-		// Validace formátu tokenu
+		// Validace formátu tokenu (SHA256 = 64 hex znaků)
 		if ( ! preg_match( '/^[a-f0-9]{64}$/', $token ) ) {
-			error_log( 'SAW-WAP: Invalid token format: ' . $token . ' (length: ' . strlen($token) . ')' );
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'SAW-WAP Shortcode: Invalid token format: ' . $token . ' (length: ' . strlen( $token ) . ')' );
+			}
 			return self::render_error( 'invalid_format' );
-		}
-		
-		// Validate token
-		$token_manager = new VideoTokenManager();
-		$access = $token_manager->validateToken( $token );
-		
-		if ( ! $access ) {
-			error_log( 'SAW-WAP: Token validation failed for: ' . $token );
-			return self::render_error( 'invalid_token' );
 		}
 		
 		// Security check - musí být přihlášený
 		$current_user_id = get_current_user_id();
 		
 		if ( 0 === $current_user_id ) {
+			// Redirect na login s return URL
 			$login_url = wp_login_url( add_query_arg( 'token', $token, get_permalink() ) );
 			wp_safe_redirect( $login_url );
 			exit;
 		}
 		
+		// Validate token
+		try {
+			$token_manager = new VideoTokenManager();
+			$access = $token_manager->validateToken( $token );
+		} catch ( \Exception $e ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'SAW-WAP Shortcode: Token validation exception: ' . $e->getMessage() );
+			}
+			return self::render_error( 'invalid_token' );
+		}
+		
+		if ( ! $access ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'SAW-WAP Shortcode: Token validation failed for: ' . $token );
+			}
+			return self::render_error( 'invalid_token' );
+		}
+		
+		// ✅ OPRAVA: Cast na int před použitím (databáze vrací string)
+		$product_id = (int) $access->product_id;
+		$video_index = (int) $access->video_index;
+		$user_id = (int) $access->user_id;
+		
 		// Security check - token musí patřit přihlášenému uživateli
-		if ( (int) $access->user_id !== $current_user_id ) {
-			error_log( 'SAW-WAP: User ID mismatch. Token user: ' . $access->user_id . ', Current user: ' . $current_user_id );
+		if ( $user_id !== $current_user_id ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'SAW-WAP Shortcode: User ID mismatch. Token user: ' . $user_id . ', Current user: ' . $current_user_id );
+			}
 			return self::render_error( 'access_denied' );
 		}
 		
 		// Load data
-		$video = self::get_video_by_token( $access );
+		$video = self::get_video_by_token( $product_id, $video_index );
 		
 		if ( ! $video ) {
-			error_log( 'SAW-WAP: Video not found for product ' . $access->product_id . ', index ' . $access->video_index );
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'SAW-WAP Shortcode: Video not found for product ' . $product_id . ', index ' . $video_index );
+			}
 			return self::render_error( 'video_not_found' );
 		}
 		
-		$product = wc_get_product( $access->product_id );
+		$product = wc_get_product( $product_id );
 		
 		if ( ! $product ) {
-			error_log( 'SAW-WAP: Product not found: ' . $access->product_id );
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'SAW-WAP Shortcode: Product not found: ' . $product_id );
+			}
 			return self::render_error( 'product_not_found' );
 		}
 		
-		$all_videos = self::get_all_product_videos( $access->product_id );
-		$progress = self::get_user_progress( $current_user_id, $access->product_id );
+		// ✅ OPRAVA: Používáme už přetypované proměnné
+		$all_videos = self::get_all_product_videos( $product_id );
+		$progress = self::get_user_progress( $current_user_id, $product_id );
 		
 		// Find navigation
-		$current_index = self::find_current_index( $all_videos, $access->video_index );
-		$prev_token = self::get_prev_token( $all_videos, $current_index, $current_user_id, $access->product_id );
-		$next_token = self::get_next_token( $all_videos, $current_index, $current_user_id, $access->product_id );
+		$current_index = self::find_current_index( $all_videos, $video_index );
+		$prev_token = self::get_prev_token( $all_videos, $current_index, $current_user_id, $product_id );
+		$next_token = self::get_next_token( $all_videos, $current_index, $current_user_id, $product_id );
 		
 		// Enqueue assets
 		self::enqueue_assets();
@@ -107,17 +132,19 @@ class Shortcodes {
 	}
 
 	/**
-	 * Get video by access token
+	 * Get video by product_id and video_index
+	 * 
+	 * ✅ OPRAVA: Změněna signatura - nemáme $access objekt
 	 */
-	private static function get_video_by_token( $access ) {
+	private static function get_video_by_token( int $product_id, int $video_index ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'saw_video_metadata';
 
 		return $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT * FROM {$table_name} WHERE product_id = %d AND video_index = %d LIMIT 1",
-				$access->product_id,
-				$access->video_index
+				$product_id,
+				$video_index
 			)
 		);
 	}
