@@ -1,1 +1,1 @@
-Super plugin pro Woo
+Super plugin pro Woo :-)
