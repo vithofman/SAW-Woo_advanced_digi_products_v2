@@ -168,12 +168,22 @@ final class Plugin {
             Core\Upgrades::maybe_upgrade();
         }
 
+        // ✅ NOVÝ: Video Token Regenerator
+        if ( class_exists( Core\VideoTokenRegenerator::class ) ) {
+            Core\VideoTokenRegenerator::init();
+        }
+
         if ( class_exists( Admin\ProductFields::class ) ) {
             Admin\ProductFields::init();
         }
 
         if ( class_exists( Admin\Settings::class ) ) {
             Admin\Settings::init();
+        }
+
+        // ✅ NOVÝ: Regenerate Notices
+        if ( class_exists( Admin\RegenerateNotices::class ) ) {
+            Admin\RegenerateNotices::init();
         }
 
         if ( class_exists( Frontend\Assets::class ) ) {
@@ -212,7 +222,6 @@ final class Plugin {
             REST\Routes::init();
         }
 
-        // ✅ OPRAVA: Přidána inicializace VideoProgressAPI
         if ( class_exists( REST\VideoProgressAPI::class ) ) {
             REST\VideoProgressAPI::init();
         }

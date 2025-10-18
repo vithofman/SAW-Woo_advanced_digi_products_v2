@@ -179,6 +179,30 @@ class ProductFields {
                     <span class="dashicons dashicons-plus-alt"></span>
                     <?php esc_html_e( 'Přidat video', 'saw-wap' ); ?>
                 </button>
+                
+                <?php
+                // ✅✅✅ NOVÝ: Regenerate button (pouze pokud produkt má objednávky) ✅✅✅
+                $has_orders = self::product_has_orders( $post->ID );
+                if ( $has_orders ) :
+                    $regenerate_url = wp_nonce_url(
+                        admin_url( 'admin-post.php?action=saw_regenerate_tokens&product_id=' . $post->ID ),
+                        'saw_regenerate_tokens',
+                        'saw_nonce'
+                    );
+                ?>
+                    <button type="button" 
+                            class="button button-secondary sawwap-regenerate-tokens"
+                            onclick="if(confirm('<?php echo esc_js( __( 'Vygenerovat chybějící tokeny pro všechny zákazníky tohoto produktu?\n\nToto vytvoří přístupové tokeny pro všechna nová videa pro všechny existující zákazníky s aktivním přístupem.', 'saw-wap' ) ); ?>')) { window.location.href='<?php echo esc_url( $regenerate_url ); ?>'; }"
+                            style="margin-left: 10px;">
+                        <span class="dashicons dashicons-update"></span>
+                        <?php esc_html_e( 'Regenerovat tokeny pro zákazníky', 'saw-wap' ); ?>
+                    </button>
+                    <p class="description" style="margin-top: 8px; color: #646970;">
+                        <span class="dashicons dashicons-info" style="color: #2271b1;"></span>
+                        <?php esc_html_e( 'Pokud jste přidali nová videa, klikněte zde pro automatické vytvoření přístupových tokenů pro všechny existující zákazníky s aktivním přístupem.', 'saw-wap' ); ?>
+                    </p>
+                <?php endif; ?>
+                <?php // ✅✅✅ KONEC NOVÉHO KÓDU ✅✅✅ ?>
             </div>
 
             <!-- Template pro nové video (hidden) -->
@@ -533,5 +557,29 @@ class ProductFields {
 
         $internal_notes = isset( $_POST['sawwap_internal_notes'] ) ? sanitize_textarea_field( wp_unslash( (string) $_POST['sawwap_internal_notes'] ) ) : '';
         $product->update_meta_data( 'sawwap_internal_notes', $internal_notes );
+    }
+
+    /**
+     * ✅✅✅ NOVÁ HELPER METODA ✅✅✅
+     * 
+     * Check if product has any completed orders.
+     * Used to determine whether to show the "Regenerate tokens" button.
+     * 
+     * @param int $product_id Product ID.
+     * @return bool True if product has at least one order with tokens.
+     */
+    private static function product_has_orders( int $product_id ): bool {
+        global $wpdb;
+
+        $count = (int) $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT COUNT(DISTINCT order_id) 
+                 FROM {$wpdb->prefix}saw_video_access_tokens 
+                 WHERE product_id = %d",
+                $product_id
+            )
+        );
+
+        return $count > 0;
     }
 }
