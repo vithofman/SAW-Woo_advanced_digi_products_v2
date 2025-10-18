@@ -29,113 +29,151 @@ class Shortcodes {
 	}
 
 	/**
-	 * =========================================================================
-	 * SHORTCODE: [saw_my_account]
-	 * =========================================================================
-	 * 
-	 * Renders complete My Account system
-	 * 
-	 * Usage: [saw_my_account]
-	 * URL with tabs: /my-account/?endpoint=courses
-	 * 
-	 * @param array $atts Shortcode attributes
-	 * @return string HTML output
-	 */
-	public static function render_my_account( $atts ): string {
-		// Check if user is logged in
-		if ( ! is_user_logged_in() ) {
-			// Redirect to login with return URL
-			$current_url = add_query_arg( array() ); // Current URL with query args
+
+
+/**
+ * =========================================================================
+ * SHORTCODE: [saw_my_account]
+ * =========================================================================
+ * 
+ * Renders complete My Account system
+ * 
+ * Usage: [saw_my_account]
+ * URL with tabs: /my-account/?endpoint=courses
+ * 
+ * @param array $atts Shortcode attributes
+ * @return string HTML output
+ */
+public static function render_my_account( $atts = array() ): string {
+	// Normalize attributes
+	$atts = is_array( $atts ) ? $atts : array();
+	
+	// Check if user is logged in
+	if ( ! is_user_logged_in() ) {
+		// For non-AJAX requests, redirect to login
+		if ( ! wp_doing_ajax() && ! defined( 'REST_REQUEST' ) ) {
+			$current_url = add_query_arg( array() );
 			$login_url = wp_login_url( $current_url );
 			
-			// If it's an AJAX request, return error
-			if ( wp_doing_ajax() ) {
-				return self::render_error( 'not_logged_in', 'my_account' );
-			}
-			
-			// Otherwise redirect
-			wp_safe_redirect( $login_url );
+			// Use wp_safe_redirect with proper status code
+			wp_safe_redirect( $login_url, 302 );
 			exit;
 		}
 		
-		// Get current user
-		$current_user = wp_get_current_user();
-		$user_id = $current_user->ID;
-		
-		// Get current endpoint from URL
-		$current_endpoint = MyAccount::get_current_endpoint();
-		
-		// Enqueue My Account assets
-		self::enqueue_my_account_assets();
-		
-		// Prepare data for template
-		$data = array(
-			'user'             => $current_user,
-			'user_id'          => $user_id,
-			'current_endpoint' => $current_endpoint,
-			'menu_items'       => MyAccount::get_menu_items( $current_endpoint ),
-		);
-		
-		// Render template with output buffering
-		ob_start();
-		
-		// Pass $data to template scope
-		extract( $data );
+		// For AJAX/REST, return error message
+		return self::render_error( 'not_logged_in', 'my_account' );
+	}
+	
+	// Get current user
+	$current_user = wp_get_current_user();
+	$user_id = $current_user->ID;
+	
+	// Get current endpoint from URL
+	$current_endpoint = MyAccount::get_current_endpoint();
+	
+	// Enqueue My Account assets
+	self::enqueue_my_account_assets();
+	
+	// Prepare data for template
+	$data = array(
+		'user'             => $current_user,
+		'user_id'          => $user_id,
+		'current_endpoint' => $current_endpoint,
+		'menu_items'       => MyAccount::get_menu_items( $current_endpoint ),
+	);
+	
+	// Start output buffering
+	ob_start();
+	
+	try {
+		// Extract data to variables (EXTR_SKIP = don't overwrite existing vars)
+		extract( $data, EXTR_SKIP );
 		
 		// Include main My Account template
 		$template_path = SAW_WAP_PATH . 'templates/shortcode-my-account.php';
 		
-		if ( file_exists( $template_path ) ) {
-			include $template_path;
-		} else {
-			echo '<div class="saw-error">Template not found: ' . esc_html( $template_path ) . '</div>';
+		// Check if template exists
+		if ( ! file_exists( $template_path ) ) {
+			throw new \Exception( 'Template not found: ' . $template_path );
 		}
 		
-		return ob_get_clean();
+		// Include the template
+		include $template_path;
+		
+	} catch ( \Exception $e ) {
+		// Clear buffer on error
+		ob_end_clean();
+		
+		// Log error if debug mode is enabled
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'SAW-WAP My Account Error: ' . $e->getMessage() );
+		}
+		
+		// Return user-friendly error message
+		return sprintf(
+			'<div class="saw-error" style="padding: 20px; background: #fee; border: 2px solid #c00; border-radius: 8px; margin: 20px 0;">
+				<p style="color: #c00; font-weight: bold; margin: 0 0 10px;">❌ Chyba načítání účtu</p>
+				<p style="margin: 0;">%s</p>
+			</div>',
+			esc_html( $e->getMessage() )
+		);
 	}
+	
+	// Get buffered content
+	$output = ob_get_clean();
+	
+	// Return the output (WordPress will render it where shortcode is placed)
+	return $output;
+}
+
 
 	/**
-	 * Enqueue CSS and JS for My Account
-	 */
-	private static function enqueue_my_account_assets(): void {
-		// My Account CSS
-		if ( ! wp_style_is( 'sawwap-my-account', 'enqueued' ) ) {
-			wp_enqueue_style(
-				'sawwap-my-account',
-				SAW_WAP_URL . 'assets/css/my-account.css',
-				array(),
-				'1.0.0'
-			);
-		}
-		
-		// My Account JavaScript
-		if ( ! wp_script_is( 'sawwap-my-account', 'enqueued' ) ) {
-			wp_enqueue_script(
-				'sawwap-my-account',
-				SAW_WAP_URL . 'assets/js/my-account.js',
-				array( 'jquery' ),
-				'1.0.0',
-				true
-			);
-			
-			// Localize script for AJAX
-			wp_localize_script(
-				'sawwap-my-account',
-				'sawwapAccountData',
-				array(
-					'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
-					'nonce'         => wp_create_nonce( 'saw_my_account_nonce' ),
-					'currentUserId' => get_current_user_id(),
-					'strings'       => array(
-						'loading'        => __( 'Načítání...', 'saw-wap' ),
-						'error'          => __( 'Nastala chyba. Zkuste to prosím znovu.', 'saw-wap' ),
-						'saved'          => __( 'Uloženo', 'saw-wap' ),
-						'confirmDelete'  => __( 'Opravdu chcete smazat?', 'saw-wap' ),
-					),
-				)
-			);
-		}
-	}
+ * Enqueue CSS and JS for My Account
+ */
+private static function enqueue_my_account_assets(): void {
+	// My Account CSS
+	wp_enqueue_style(
+		'sawwap-my-account',
+		SAW_WAP_URL . 'assets/css/my-account.css',
+		array(),
+		filemtime( SAW_WAP_PATH . 'assets/css/my-account.css' ) // Cache busting
+	);
+	
+	// My Account JavaScript
+	wp_enqueue_script(
+		'sawwap-my-account',
+		SAW_WAP_URL . 'assets/js/my-account.js',
+		array( 'jquery' ),
+		filemtime( SAW_WAP_PATH . 'assets/js/my-account.js' ), // Cache busting
+		true // Load in footer
+	);
+	
+	// Mobile menu inline script
+	wp_enqueue_script(
+		'sawwap-my-account-inline',
+		SAW_WAP_URL . 'assets/js/my-account-inline.js',
+		array(),
+		filemtime( SAW_WAP_PATH . 'assets/js/my-account-inline.js' ),
+		true
+	);
+	
+	// Localize script for AJAX
+	wp_localize_script(
+		'sawwap-my-account',
+		'sawwapAccountData',
+		array(
+			'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
+			'nonce'         => wp_create_nonce( 'saw_my_account_nonce' ),
+			'currentUserId' => get_current_user_id(),
+			'strings'       => array(
+				'loading'        => __( 'Načítání...', 'saw-wap' ),
+				'error'          => __( 'Nastala chyba. Zkuste to prosím znovu.', 'saw-wap' ),
+				'saved'          => __( 'Uloženo', 'saw-wap' ),
+				'confirmDelete'  => __( 'Opravdu chcete smazat?', 'saw-wap' ),
+			),
+		)
+	);
+}
 
 	/**
 	 * =========================================================================

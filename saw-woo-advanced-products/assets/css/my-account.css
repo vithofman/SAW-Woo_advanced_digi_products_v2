@@ -1,0 +1,1079 @@
+/* ==========================================================================
+   OXYGEN COMPATIBILITY
+   ========================================================================== */
+
+/**
+ * Ensure our shortcode works within Oxygen templates
+ */
+body.oxygen-body .saw-my-account-wrapper {
+	max-width: 100%;
+	margin: 0;
+	padding: 40px 20px;
+}
+
+/* If Oxygen wraps content in specific classes */
+.ct-section .saw-my-account-wrapper,
+.oxy-post-content .saw-my-account-wrapper {
+	max-width: 1400px;
+	margin: 0 auto;
+}
+
+
+/* ==========================================================================
+   MY ACCOUNT - MAIN LAYOUT
+   ========================================================================== */
+
+/**
+ * Main Wrapper
+ */
+.saw-my-account-wrapper {
+	max-width: 1400px;
+	margin: 40px auto;
+	padding: 0 20px;
+}
+
+/**
+ * Header Section
+ */
+.saw-my-account__header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 32px;
+	padding-bottom: 24px;
+	border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.saw-my-account__greeting {
+	flex: 1;
+}
+
+.saw-my-account__title {
+	font-size: 32px;
+	font-weight: 700;
+	margin: 0 0 8px 0;
+	color: #1a1a1a;
+}
+
+.saw-my-account__subtitle {
+	font-size: 16px;
+	color: #666;
+	margin: 0;
+}
+
+/**
+ * Mobile Toggle Button
+ */
+.saw-my-account__mobile-toggle {
+	display: none; /* Hidden on desktop */
+	align-items: center;
+	gap: 8px;
+	padding: 10px 16px;
+	background: #0073aa;
+	color: #fff;
+	border: none;
+	border-radius: 8px;
+	font-size: 15px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.saw-my-account__mobile-toggle:hover {
+	background: #005a87;
+}
+
+.saw-mobile-toggle__icon {
+	font-size: 20px;
+}
+
+/**
+ * Main Grid Layout
+ */
+.saw-my-account__grid {
+	display: grid;
+	grid-template-columns: 280px 1fr;
+	gap: 32px;
+	align-items: start;
+}
+
+/**
+ * Sidebar
+ */
+.saw-my-account__sidebar {
+	position: sticky;
+	top: 20px;
+	background: #fff;
+	border-radius: 12px;
+	padding: 24px 16px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/**
+ * Content Area
+ */
+.saw-my-account__content {
+	background: #fff;
+	border-radius: 12px;
+	padding: 32px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	min-height: 500px;
+}
+
+/**
+ * Loading Overlay
+ */
+.saw-loading-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(255, 255, 255, 0.9);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	z-index: 9999;
+}
+
+.saw-loading-spinner {
+	width: 50px;
+	height: 50px;
+	border: 4px solid rgba(0, 115, 170, 0.1);
+	border-top-color: #0073aa;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
+}
+
+/**
+ * Footer
+ */
+.saw-my-account__footer {
+	margin-top: 40px;
+	padding-top: 24px;
+	border-top: 1px solid rgba(0, 0, 0, 0.1);
+	text-align: center;
+}
+
+.saw-my-account__footer-text {
+	font-size: 14px;
+	color: #666;
+	margin: 0;
+}
+
+.saw-logout-link {
+	color: #d32f2f;
+	text-decoration: none;
+	font-weight: 600;
+}
+
+.saw-logout-link:hover {
+	text-decoration: underline;
+}
+
+/* ==========================================================================
+   RESPONSIVE - MAIN LAYOUT
+   ========================================================================== */
+
+/**
+ * Tablet (768px - 1023px)
+ */
+@media (min-width: 768px) and (max-width: 1023px) {
+	.saw-my-account__grid {
+		grid-template-columns: 240px 1fr;
+		gap: 24px;
+	}
+	
+	.saw-my-account__content {
+		padding: 24px;
+	}
+}
+
+/**
+ * Mobile (< 768px)
+ */
+@media (max-width: 767px) {
+	.saw-my-account-wrapper {
+		padding: 0 15px;
+		margin: 20px auto;
+	}
+	
+	.saw-my-account__header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 16px;
+	}
+	
+	.saw-my-account__title {
+		font-size: 24px;
+	}
+	
+	/* Show mobile toggle */
+	.saw-my-account__mobile-toggle {
+		display: flex;
+	}
+	
+	/* Single column layout */
+	.saw-my-account__grid {
+		grid-template-columns: 1fr;
+		gap: 0;
+	}
+	
+	/* Sidebar - hidden by default on mobile */
+	.saw-my-account__sidebar {
+		position: fixed;
+		top: 0;
+		left: -100%;
+		width: 280px;
+		height: 100vh;
+		z-index: 9998;
+		transition: left 0.3s ease;
+		border-radius: 0;
+		overflow-y: auto;
+		box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+	}
+	
+	/* Sidebar open state */
+	.saw-my-account__sidebar--open {
+		left: 0;
+	}
+	
+	/* Content padding */
+	.saw-my-account__content {
+		padding: 20px;
+		border-radius: 8px;
+	}
+	
+	/* Footer */
+	.saw-my-account__footer {
+		margin-top: 30px;
+	}
+	
+	.saw-my-account__footer-text {
+		font-size: 13px;
+	}
+}
+
+
+/* ==========================================================================
+   DASHBOARD PAGE
+   ========================================================================== */
+
+/**
+ * Dashboard Container
+ */
+.saw-dashboard {
+	width: 100%;
+}
+
+/**
+ * Dashboard Header
+ */
+.saw-dashboard__header {
+	margin-bottom: 32px;
+}
+
+.saw-dashboard__title {
+	font-size: 28px;
+	font-weight: 700;
+	margin: 0 0 8px 0;
+	color: #1a1a1a;
+}
+
+.saw-dashboard__subtitle {
+	font-size: 16px;
+	color: #666;
+	margin: 0;
+}
+
+/**
+ * Statistics Cards Grid
+ */
+.saw-dashboard__stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	gap: 20px;
+	margin-bottom: 40px;
+}
+
+/**
+ * Stat Card
+ */
+.saw-stat-card {
+	background: #fff;
+	border-radius: 12px;
+	padding: 24px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	transition: all 0.3s ease;
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+}
+
+.saw-stat-card:hover {
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+	transform: translateY(-2px);
+}
+
+/* Card Icon */
+.saw-stat-card__icon {
+	font-size: 32px;
+	width: 60px;
+	height: 60px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 12px;
+	flex-shrink: 0;
+}
+
+.saw-stat-card--primary .saw-stat-card__icon {
+	background: rgba(0, 123, 255, 0.1);
+}
+
+.saw-stat-card--success .saw-stat-card__icon {
+	background: rgba(76, 175, 80, 0.1);
+}
+
+.saw-stat-card--info .saw-stat-card__icon {
+	background: rgba(33, 150, 243, 0.1);
+}
+
+.saw-stat-card--warning .saw-stat-card__icon {
+	background: rgba(255, 152, 0, 0.1);
+}
+
+.saw-stat-card--neutral .saw-stat-card__icon {
+	background: rgba(158, 158, 158, 0.1);
+}
+
+/* Card Content */
+.saw-stat-card__content {
+	flex: 1;
+}
+
+.saw-stat-card__value {
+	font-size: 32px;
+	font-weight: 700;
+	line-height: 1;
+	margin-bottom: 4px;
+}
+
+.saw-stat-card--primary .saw-stat-card__value {
+	color: #0073aa;
+}
+
+.saw-stat-card--success .saw-stat-card__value {
+	color: #4caf50;
+}
+
+.saw-stat-card--info .saw-stat-card__value {
+	color: #2196f3;
+}
+
+.saw-stat-card--warning .saw-stat-card__value {
+	color: #ff9800;
+}
+
+.saw-stat-card__label {
+	font-size: 14px;
+	color: #666;
+	font-weight: 500;
+}
+
+/* Card Link (arrow) */
+.saw-stat-card__link {
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.05);
+	border-radius: 8px;
+	color: #666;
+	text-decoration: none;
+	font-size: 18px;
+	transition: all 0.2s ease;
+}
+
+.saw-stat-card__link:hover {
+	background: #0073aa;
+	color: #fff;
+	transform: translateX(2px);
+}
+
+/**
+ * Dashboard Sections
+ */
+.saw-dashboard__section {
+	margin-bottom: 40px;
+}
+
+.saw-dashboard__section-title {
+	font-size: 20px;
+	font-weight: 600;
+	margin: 0 0 20px 0;
+	color: #1a1a1a;
+}
+
+/**
+ * Quick Actions Grid
+ */
+.saw-quick-actions {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 16px;
+}
+
+/**
+ * Quick Action Card
+ */
+.saw-quick-action {
+	background: #fff;
+	border: 2px solid #e0e0e0;
+	border-radius: 12px;
+	padding: 20px;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	text-decoration: none;
+	color: inherit;
+	transition: all 0.2s ease;
+}
+
+.saw-quick-action:hover {
+	border-color: #0073aa;
+	box-shadow: 0 4px 12px rgba(0, 115, 170, 0.1);
+	transform: translateY(-2px);
+	text-decoration: none;
+}
+
+/* Primary action (featured) */
+.saw-quick-action--primary {
+	background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+	border-color: #0073aa;
+	color: #fff;
+}
+
+.saw-quick-action--primary:hover {
+	box-shadow: 0 6px 20px rgba(0, 115, 170, 0.3);
+}
+
+.saw-quick-action--primary .saw-quick-action__title,
+.saw-quick-action--primary .saw-quick-action__desc {
+	color: #fff;
+}
+
+/* Quick Action Icon */
+.saw-quick-action__icon {
+	font-size: 32px;
+	width: 48px;
+	height: 48px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+/* Quick Action Content */
+.saw-quick-action__content {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.saw-quick-action__title {
+	font-size: 16px;
+	font-weight: 600;
+	color: #1a1a1a;
+	margin: 0;
+}
+
+.saw-quick-action__desc {
+	font-size: 14px;
+	color: #666;
+	margin: 0;
+	line-height: 1.4;
+}
+
+.saw-quick-action__desc small {
+	font-size: 13px;
+	opacity: 0.8;
+}
+
+/**
+ * Activity Feed
+ */
+.saw-activity-feed {
+	background: #fff;
+	border-radius: 12px;
+	padding: 24px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.saw-activity-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+/**
+ * Activity Item
+ */
+.saw-activity-item {
+	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+	margin: 0;
+	padding: 0;
+}
+
+.saw-activity-item:last-child {
+	border-bottom: none;
+}
+
+.saw-activity-link {
+	display: flex;
+	align-items: flex-start;
+	gap: 16px;
+	padding: 16px 0;
+	text-decoration: none;
+	color: inherit;
+	transition: all 0.2s ease;
+}
+
+.saw-activity-link:hover {
+	background: rgba(0, 123, 255, 0.02);
+	margin: 0 -16px;
+	padding: 16px;
+	border-radius: 8px;
+}
+
+/* Activity Icon */
+.saw-activity-icon {
+	font-size: 24px;
+	width: 40px;
+	height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 123, 255, 0.1);
+	border-radius: 10px;
+	flex-shrink: 0;
+}
+
+/* Activity Content */
+.saw-activity-content {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.saw-activity-title {
+	font-size: 15px;
+	font-weight: 600;
+	color: #1a1a1a;
+	margin: 0;
+}
+
+.saw-activity-desc {
+	font-size: 14px;
+	color: #666;
+	margin: 0;
+}
+
+.saw-activity-time {
+	font-size: 13px;
+	color: #999;
+	margin: 0;
+}
+
+/* ==========================================================================
+   RESPONSIVE - DASHBOARD
+   ========================================================================== */
+
+/**
+ * Mobile (< 768px)
+ */
+@media (max-width: 767px) {
+	.saw-dashboard__title {
+		font-size: 24px;
+	}
+	
+	.saw-dashboard__stats {
+		grid-template-columns: 1fr;
+		gap: 16px;
+	}
+	
+	.saw-stat-card {
+		padding: 20px;
+	}
+	
+	.saw-stat-card__icon {
+		font-size: 28px;
+		width: 50px;
+		height: 50px;
+	}
+	
+	.saw-stat-card__value {
+		font-size: 28px;
+	}
+	
+	.saw-quick-actions {
+		grid-template-columns: 1fr;
+	}
+	
+	.saw-activity-feed {
+		padding: 16px;
+	}
+}
+
+/**
+ * Tablet (768px - 1023px)
+ */
+@media (min-width: 768px) and (max-width: 1023px) {
+	.saw-dashboard__stats {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+/* ==========================================================================
+   COURSES PAGE
+   ========================================================================== */
+
+/**
+ * Courses Container
+ */
+.saw-courses {
+	width: 100%;
+}
+
+/**
+ * Courses Header
+ */
+.saw-courses__header {
+	margin-bottom: 32px;
+}
+
+.saw-courses__title {
+	font-size: 28px;
+	font-weight: 700;
+	margin: 0 0 8px 0;
+	color: #1a1a1a;
+}
+
+.saw-courses__subtitle {
+	font-size: 16px;
+	color: #666;
+	margin: 0;
+}
+
+/**
+ * Toolbar (Filters + Search)
+ */
+.saw-courses__toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px;
+	margin-bottom: 32px;
+	align-items: center;
+}
+
+/**
+ * Filter Buttons
+ */
+.saw-courses__filters {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.saw-filter-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 16px;
+	background: #fff;
+	border: 2px solid #e0e0e0;
+	border-radius: 8px;
+	color: #666;
+	text-decoration: none;
+	font-weight: 500;
+	font-size: 14px;
+	transition: all 0.2s ease;
+	cursor: pointer;
+}
+
+.saw-filter-btn:hover {
+	border-color: #0073aa;
+	color: #0073aa;
+	background: rgba(0, 115, 170, 0.05);
+	text-decoration: none;
+}
+
+.saw-filter-btn--active {
+	background: #0073aa;
+	border-color: #0073aa;
+	color: #fff;
+}
+
+.saw-filter-btn--active:hover {
+	background: #005a87;
+	border-color: #005a87;
+}
+
+.saw-filter-btn__count {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 24px;
+	height: 24px;
+	padding: 0 6px;
+	background: rgba(0, 0, 0, 0.1);
+	border-radius: 12px;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.saw-filter-btn--active .saw-filter-btn__count {
+	background: rgba(255, 255, 255, 0.2);
+}
+
+/**
+ * Search Box
+ */
+.saw-courses__search {
+	flex: 1;
+	min-width: 250px;
+}
+
+.saw-search-input {
+	width: 100%;
+	padding: 10px 16px;
+	border: 2px solid #e0e0e0;
+	border-radius: 8px;
+	font-size: 14px;
+	transition: all 0.2s ease;
+}
+
+.saw-search-input:focus {
+	outline: none;
+	border-color: #0073aa;
+	box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+/**
+ * Courses Grid
+ */
+.saw-courses__grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+	gap: 24px;
+	margin-bottom: 40px;
+}
+
+/**
+ * Course Card
+ */
+.saw-course-card {
+	background: #fff;
+	border-radius: 12px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	transition: all 0.3s ease;
+	overflow: hidden;
+}
+
+.saw-course-card:hover {
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+	transform: translateY(-4px);
+}
+
+/**
+ * Card Thumbnail
+ */
+.saw-course-card__thumbnail {
+	position: relative;
+	width: 100%;
+	height: 180px;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	overflow: hidden;
+}
+
+.saw-course-card__thumbnail img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.saw-course-card__thumbnail-placeholder {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 64px;
+}
+
+/**
+ * Status Badge (overlay on thumbnail)
+ */
+.saw-course-card__badge {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	z-index: 2;
+}
+
+/**
+ * Card Content
+ */
+.saw-course-card__content {
+	padding: 20px;
+}
+
+.saw-course-card__title {
+	font-size: 18px;
+	font-weight: 600;
+	margin: 0 0 16px 0;
+	color: #1a1a1a;
+	line-height: 1.4;
+}
+
+/**
+ * Progress Bar Container
+ */
+.saw-course-card__progress {
+	margin-bottom: 16px;
+}
+
+/**
+ * Meta Info
+ */
+.saw-course-card__meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-bottom: 16px;
+	font-size: 14px;
+}
+
+.saw-course-card__meta-item {
+	color: #666;
+}
+
+/**
+ * Action Buttons
+ */
+.saw-course-card__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+/**
+ * Lessons Accordion
+ */
+.saw-course-card__lessons {
+	border-top: 1px solid rgba(0, 0, 0, 0.08);
+	padding: 20px;
+	background: rgba(0, 0, 0, 0.02);
+}
+
+.saw-lessons-list__title {
+	font-size: 14px;
+	font-weight: 600;
+	text-transform: uppercase;
+	color: #666;
+	margin: 0 0 12px 0;
+}
+
+/**
+ * Lessons List
+ */
+.saw-lessons {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.saw-lesson-item {
+	margin: 0 0 4px 0;
+}
+
+.saw-lesson-link {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 12px;
+	background: #fff;
+	border-radius: 6px;
+	text-decoration: none;
+	color: #333;
+	transition: all 0.2s ease;
+}
+
+.saw-lesson-link:hover {
+	background: rgba(0, 115, 170, 0.05);
+	text-decoration: none;
+}
+
+.saw-lesson-item--completed .saw-lesson-link {
+	opacity: 0.7;
+}
+
+.saw-lesson-icon {
+	font-size: 18px;
+	flex-shrink: 0;
+}
+
+.saw-lesson-title {
+	flex: 1;
+	font-size: 14px;
+	font-weight: 500;
+}
+
+.saw-lesson-duration {
+	font-size: 13px;
+	color: #999;
+	flex-shrink: 0;
+}
+
+/**
+ * Toggle Button Icon
+ */
+.saw-toggle-lessons .saw-toggle-icon {
+	display: inline-block;
+	transition: transform 0.3s ease;
+}
+
+.saw-toggle-lessons[aria-expanded="true"] .saw-toggle-icon {
+	transform: rotate(180deg);
+}
+
+/**
+ * No Results Message
+ */
+.saw-courses__no-results,
+.saw-courses__empty {
+	margin-top: 40px;
+}
+
+/**
+ * Buttons (reusable)
+ */
+.saw-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 12px 20px;
+	border: none;
+	border-radius: 8px;
+	font-size: 15px;
+	font-weight: 600;
+	text-decoration: none;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	white-space: nowrap;
+}
+
+.saw-btn--small {
+	padding: 8px 14px;
+	font-size: 14px;
+}
+
+.saw-btn--primary {
+	background: #0073aa;
+	color: #fff;
+}
+
+.saw-btn--primary:hover {
+	background: #005a87;
+	color: #fff;
+	text-decoration: none;
+	transform: translateY(-1px);
+	box-shadow: 0 2px 8px rgba(0, 115, 170, 0.3);
+}
+
+.saw-btn--secondary {
+	background: #fff;
+	color: #0073aa;
+	border: 2px solid #0073aa;
+}
+
+.saw-btn--secondary:hover {
+	background: #0073aa;
+	color: #fff;
+	text-decoration: none;
+}
+
+.saw-btn--ghost {
+	background: transparent;
+	color: #666;
+	border: 1px solid #e0e0e0;
+}
+
+.saw-btn--ghost:hover {
+	background: rgba(0, 0, 0, 0.04);
+	color: #333;
+	text-decoration: none;
+}
+
+/* ==========================================================================
+   RESPONSIVE - COURSES
+   ========================================================================== */
+
+/**
+ * Mobile (< 768px)
+ */
+@media (max-width: 767px) {
+	.saw-courses__title {
+		font-size: 24px;
+	}
+	
+	.saw-courses__toolbar {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	
+	.saw-courses__filters {
+		width: 100%;
+	}
+	
+	.saw-filter-btn {
+		flex: 1;
+		justify-content: center;
+	}
+	
+	.saw-courses__search {
+		width: 100%;
+	}
+	
+	.saw-courses__grid {
+		grid-template-columns: 1fr;
+		gap: 20px;
+	}
+	
+	.saw-course-card__actions {
+		flex-direction: column;
+	}
+	
+	.saw-btn {
+		width: 100%;
+	}
+}
+
+/**
+ * Tablet (768px - 1023px)
+ */
+@media (min-width: 768px) and (max-width: 1023px) {
+	.saw-courses__grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
