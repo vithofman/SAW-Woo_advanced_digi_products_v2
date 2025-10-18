@@ -1,29 +1,147 @@
 <?php
 /**
- * Shortcodes skeleton.
+ * Shortcodes for SAW-WAP Plugin
  *
  * @package SAW\WAP\Frontend
  */
 
-declare( strict_types=1 );
+declare(strict_types=1);
 
 namespace SAW\WAP\Frontend;
 
 use SAW\WAP\Core\VideoTokenManager;
+use SAW\WAP\Core\MyAccount;
 use SAW\WAP\Helpers\VideoHelpers;
 
 /**
- * Registers shortcode placeholders.
+ * Registers and handles all plugin shortcodes.
  */
 class Shortcodes {
 	/**
 	 * Initialize hooks.
 	 */
 	public static function init(): void {
+		// Video course player shortcode
 		add_shortcode( 'saw_video_course_player', array( self::class, 'render_video_course_player' ) );
+		
+		// My Account shortcode (NEW!)
+		add_shortcode( 'saw_my_account', array( self::class, 'render_my_account' ) );
 	}
 
 	/**
+	 * =========================================================================
+	 * SHORTCODE: [saw_my_account]
+	 * =========================================================================
+	 * 
+	 * Renders complete My Account system
+	 * 
+	 * Usage: [saw_my_account]
+	 * URL with tabs: /my-account/?endpoint=courses
+	 * 
+	 * @param array $atts Shortcode attributes
+	 * @return string HTML output
+	 */
+	public static function render_my_account( $atts ): string {
+		// Check if user is logged in
+		if ( ! is_user_logged_in() ) {
+			// Redirect to login with return URL
+			$current_url = add_query_arg( array() ); // Current URL with query args
+			$login_url = wp_login_url( $current_url );
+			
+			// If it's an AJAX request, return error
+			if ( wp_doing_ajax() ) {
+				return self::render_error( 'not_logged_in', 'my_account' );
+			}
+			
+			// Otherwise redirect
+			wp_safe_redirect( $login_url );
+			exit;
+		}
+		
+		// Get current user
+		$current_user = wp_get_current_user();
+		$user_id = $current_user->ID;
+		
+		// Get current endpoint from URL
+		$current_endpoint = MyAccount::get_current_endpoint();
+		
+		// Enqueue My Account assets
+		self::enqueue_my_account_assets();
+		
+		// Prepare data for template
+		$data = array(
+			'user'             => $current_user,
+			'user_id'          => $user_id,
+			'current_endpoint' => $current_endpoint,
+			'menu_items'       => MyAccount::get_menu_items( $current_endpoint ),
+		);
+		
+		// Render template with output buffering
+		ob_start();
+		
+		// Pass $data to template scope
+		extract( $data );
+		
+		// Include main My Account template
+		$template_path = SAW_WAP_PATH . 'templates/shortcode-my-account.php';
+		
+		if ( file_exists( $template_path ) ) {
+			include $template_path;
+		} else {
+			echo '<div class="saw-error">Template not found: ' . esc_html( $template_path ) . '</div>';
+		}
+		
+		return ob_get_clean();
+	}
+
+	/**
+	 * Enqueue CSS and JS for My Account
+	 */
+	private static function enqueue_my_account_assets(): void {
+		// My Account CSS
+		if ( ! wp_style_is( 'sawwap-my-account', 'enqueued' ) ) {
+			wp_enqueue_style(
+				'sawwap-my-account',
+				SAW_WAP_URL . 'assets/css/my-account.css',
+				array(),
+				'1.0.0'
+			);
+		}
+		
+		// My Account JavaScript
+		if ( ! wp_script_is( 'sawwap-my-account', 'enqueued' ) ) {
+			wp_enqueue_script(
+				'sawwap-my-account',
+				SAW_WAP_URL . 'assets/js/my-account.js',
+				array( 'jquery' ),
+				'1.0.0',
+				true
+			);
+			
+			// Localize script for AJAX
+			wp_localize_script(
+				'sawwap-my-account',
+				'sawwapAccountData',
+				array(
+					'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
+					'nonce'         => wp_create_nonce( 'saw_my_account_nonce' ),
+					'currentUserId' => get_current_user_id(),
+					'strings'       => array(
+						'loading'        => __( 'Načítání...', 'saw-wap' ),
+						'error'          => __( 'Nastala chyba. Zkuste to prosím znovu.', 'saw-wap' ),
+						'saved'          => __( 'Uloženo', 'saw-wap' ),
+						'confirmDelete'  => __( 'Opravdu chcete smazat?', 'saw-wap' ),
+					),
+				)
+			);
+		}
+	}
+
+	/**
+	 * =========================================================================
+	 * SHORTCODE: [saw_video_course_player]
+	 * =========================================================================
+	 * 
 	 * Render video course player shortcode
 	 * 
 	 * Usage: [saw_video_course_player]
@@ -42,7 +160,7 @@ class Shortcodes {
 		$token = trim( $token, " \t\n\r\0\x0B/" );
 		
 		if ( empty( $token ) ) {
-			return self::render_error( 'missing_token' );
+			return self::render_error( 'missing_token', 'video_player' );
 		}
 		
 		// Validace formátu tokenu (SHA256 = 64 hex znaků)
@@ -50,7 +168,7 @@ class Shortcodes {
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 				error_log( 'SAW-WAP Shortcode: Invalid token format: ' . $token . ' (length: ' . strlen( $token ) . ')' );
 			}
-			return self::render_error( 'invalid_format' );
+			return self::render_error( 'invalid_format', 'video_player' );
 		}
 		
 		// Security check - musí být přihlášený
@@ -71,14 +189,14 @@ class Shortcodes {
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 				error_log( 'SAW-WAP Shortcode: Token validation exception: ' . $e->getMessage() );
 			}
-			return self::render_error( 'invalid_token' );
+			return self::render_error( 'invalid_token', 'video_player' );
 		}
 		
 		if ( ! $access ) {
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 				error_log( 'SAW-WAP Shortcode: Token validation failed for: ' . $token );
 			}
-			return self::render_error( 'invalid_token' );
+			return self::render_error( 'invalid_token', 'video_player' );
 		}
 		
 		// ✅ OPRAVA: Cast na int před použitím (databáze vrací string)
@@ -91,7 +209,7 @@ class Shortcodes {
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 				error_log( 'SAW-WAP Shortcode: User ID mismatch. Token user: ' . $user_id . ', Current user: ' . $current_user_id );
 			}
-			return self::render_error( 'access_denied' );
+			return self::render_error( 'access_denied', 'video_player' );
 		}
 		
 		// Load data
@@ -101,7 +219,7 @@ class Shortcodes {
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 				error_log( 'SAW-WAP Shortcode: Video not found for product ' . $product_id . ', index ' . $video_index );
 			}
-			return self::render_error( 'video_not_found' );
+			return self::render_error( 'video_not_found', 'video_player' );
 		}
 		
 		$product = wc_get_product( $product_id );
@@ -110,7 +228,7 @@ class Shortcodes {
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 				error_log( 'SAW-WAP Shortcode: Product not found: ' . $product_id );
 			}
-			return self::render_error( 'product_not_found' );
+			return self::render_error( 'product_not_found', 'video_player' );
 		}
 		
 		// ✅ OPRAVA: Používáme už přetypované proměnné
@@ -123,13 +241,19 @@ class Shortcodes {
 		$next_token = self::get_next_token( $all_videos, $current_index, $current_user_id, $product_id );
 		
 		// ✅ OPRAVA: Enqueue assets pouze jednou zde
-		self::enqueue_assets();
+		self::enqueue_video_player_assets();
 		
 		// Render template
 		ob_start();
 		include SAW_WAP_PATH . 'templates/shortcode-video-course-player.php';
 		return ob_get_clean();
 	}
+
+	/**
+	 * =========================================================================
+	 * HELPER METHODS FOR VIDEO PLAYER
+	 * =========================================================================
+	 */
 
 	/**
 	 * Get video by product_id and video_index
@@ -196,8 +320,8 @@ class Shortcodes {
 
 		return array(
 			'completed' => $completed,
-			'total' => $total,
-			'percent' => $percent,
+			'total'     => $total,
+			'percent'   => $percent,
 		);
 	}
 
@@ -238,10 +362,9 @@ class Shortcodes {
 	}
 
 	/**
-	 * Enqueue assets
-	 * ✅ OPRAVA: Zkontrolováno že se nenačítají duplicitně
+	 * Enqueue assets for video player
 	 */
-	private static function enqueue_assets(): void {
+	private static function enqueue_video_player_assets(): void {
 		// CSS pro video player
 		if ( ! wp_style_is( 'sawwap-video-course-player', 'enqueued' ) ) {
 			wp_enqueue_style(
@@ -290,28 +413,54 @@ class Shortcodes {
 	}
 
 	/**
-	 * Render error message
+	 * =========================================================================
+	 * ERROR HANDLING
+	 * =========================================================================
 	 */
-	private static function render_error( string $type = 'invalid_token' ): string {
+
+	/**
+	 * Render error message
+	 * 
+	 * @param string $type Error type
+	 * @param string $context Context: 'video_player' or 'my_account'
+	 * @return string HTML error message
+	 */
+	private static function render_error( string $type = 'invalid_token', string $context = 'video_player' ): string {
 		$messages = array(
-			'missing_token' => 'Chybí přístupový token.',
-			'invalid_format' => 'Neplatný formát tokenu.',
-			'invalid_token' => 'Neplatný nebo vypršelý přístupový token.',
-			'access_denied' => 'Tento token nepatří vašemu účtu.',
-			'video_not_found' => 'Video nebylo nalezeno.',
+			// Video player errors
+			'missing_token'     => 'Chybí přístupový token.',
+			'invalid_format'    => 'Neplatný formát tokenu.',
+			'invalid_token'     => 'Neplatný nebo vypršelý přístupový token.',
+			'access_denied'     => 'Tento token nepatří vašemu účtu.',
+			'video_not_found'   => 'Video nebylo nalezeno.',
 			'product_not_found' => 'Kurz nebyl nalezen.',
+			
+			// My Account errors
+			'not_logged_in'     => 'Pro zobrazení této stránky musíte být přihlášeni.',
+			'permission_denied' => 'Nemáte oprávnění k této akci.',
+			'invalid_request'   => 'Neplatný požadavek.',
 		);
 
 		$message = isset( $messages[ $type ] ) ? $messages[ $type ] : $messages['invalid_token'];
+		
+		// Determine back link based on context
+		if ( $context === 'my_account' ) {
+			$back_url = home_url();
+			$back_text = '← Zpět na hlavní stránku';
+		} else {
+			$back_url = wc_get_account_endpoint_url( 'saw-videos' );
+			$back_text = '← Zpět na moje kurzy';
+		}
 
 		return sprintf(
 			'<div class="saw-error-message" style="padding: 40px; text-align: center; background: #fee; border: 2px solid #c00; border-radius: 8px; margin: 20px 0;">
 				<p style="color: #c00; font-size: 18px; font-weight: 600; margin: 0 0 10px;">❌ Chyba přístupu</p>
 				<p style="margin: 0 0 20px;">%s</p>
-				<a href="%s" style="display: inline-block; padding: 12px 24px; background: #0073aa; color: #fff; text-decoration: none; border-radius: 4px;">← Zpět na moje kurzy</a>
+				<a href="%s" style="display: inline-block; padding: 12px 24px; background: #0073aa; color: #fff; text-decoration: none; border-radius: 4px;">%s</a>
 			</div>',
 			esc_html( $message ),
-			esc_url( wc_get_account_endpoint_url( 'saw-videos' ) )
+			esc_url( $back_url ),
+			esc_html( $back_text )
 		);
 	}
 }
