@@ -36,74 +36,196 @@ class Shortcodes {
 	 * @param array $atts Shortcode attributes
 	 * @return string HTML output
 	 */
-	public static function render_my_account( $atts = array() ): string {
-		$atts = is_array( $atts ) ? $atts : array();
-		
-		// ⚠️ NIKDY NEPOUŽÍVAT exit() nebo wp_safe_redirect() V SHORTCODU!
-		// To zabíjí Oxygen template rendering!
-		
-		if ( ! is_user_logged_in() ) {
-			$login_url = wp_login_url( add_query_arg( array() ) );
-			
-			return sprintf(
-				'<div style="padding: 80px 20px; text-align: center; background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); border-radius: 16px; margin: 40px 0;">
-					<div style="max-width: 500px; margin: 0 auto; background: white; padding: 60px 40px; border-radius: 12px;">
-						<div style="font-size: 72px; margin-bottom: 24px;">🔒</div>
-						<h2 style="font-size: 32px; margin: 0 0 16px 0; color: #1a1a1a;">Přihlášení vyžadováno</h2>
-						<p style="font-size: 18px; color: #666; margin: 0 0 40px 0;">Pro přístup k vašemu účtu se prosím přihlaste.</p>
-						<a href="%s" style="display: inline-block; padding: 18px 48px; background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); color: #fff; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 18px;">
-							Přihlásit se →
-						</a>
-					</div>
-				</div>',
-				esc_url( $login_url )
-			);
-		}
-		
-		$current_user = wp_get_current_user();
-		$user_id = $current_user->ID;
-		$current_endpoint = MyAccount::get_current_endpoint();
-		
-		self::enqueue_my_account_assets();
-		
-		$data = array(
-			'user'             => $current_user,
-			'user_id'          => $user_id,
-			'current_endpoint' => $current_endpoint,
-			'menu_items'       => MyAccount::get_menu_items( $current_endpoint ),
-		);
-		
-		ob_start();
-		
-		try {
-			extract( $data, EXTR_SKIP );
-			
-			$template_path = SAW_WAP_PATH . 'templates/shortcode-my-account.php';
-			
-			if ( ! file_exists( $template_path ) ) {
-				throw new \Exception( 'Template not found: ' . $template_path );
-			}
-			
-			include $template_path;
-			
-		} catch ( \Exception $e ) {
-			ob_end_clean();
-			
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( 'SAW-WAP My Account Error: ' . $e->getMessage() );
-			}
-			
-			return sprintf(
-				'<div style="padding: 20px; background: #fee; border: 2px solid #c00; border-radius: 8px; margin: 20px 0;">
-					<p style="color: #c00; font-weight: bold; margin: 0 0 10px;">❌ Chyba načítání účtu</p>
-					<p style="margin: 0;">%s</p>
-				</div>',
-				esc_html( $e->getMessage() )
-			);
-		}
-		
-		return ob_get_clean();
-	}
+	
+
+
+
+
+public static function render_my_account( $atts = array() ): string {
+    if ( ! is_user_logged_in() ) {
+        $login_url = wp_login_url( add_query_arg( array() ) );
+        
+        return sprintf(
+            '<div style="padding: 80px 20px; text-align: center; background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); border-radius: 16px; margin: 40px 0;">
+                <div style="max-width: 500px; margin: 0 auto; background: white; padding: 60px 40px; border-radius: 12px;">
+                    <div style="font-size: 72px; margin-bottom: 24px;">🔒</div>
+                    <h2 style="font-size: 32px; margin: 0 0 16px 0; color: #1a1a1a;">Přihlášení vyžadováno</h2>
+                    <p style="font-size: 18px; color: #666; margin: 0 0 40px 0;">Pro přístup k vašemu účtu se prosím přihlaste.</p>
+                    <a href="%s" style="display: inline-block; padding: 18px 48px; background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); color: #fff; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 18px;">
+                        Přihlásit se →
+                    </a>
+                </div>
+            </div>',
+            esc_url( $login_url )
+        );
+    }
+    
+    $current_user = wp_get_current_user();
+    $user_id = $current_user->ID;
+    $current_endpoint = MyAccount::get_current_endpoint();
+    $menu_items = MyAccount::get_menu_items( $current_endpoint );
+    
+    self::enqueue_my_account_assets();
+    
+    // ✅ ŘEŠENÍ: VYGENEROVAT HTML PŘÍMO (BEZ include)
+    return self::render_my_account_html( $current_user, $user_id, $current_endpoint, $menu_items );
+}
+
+/**
+ * Render My Account HTML directly (without include)
+ * 
+ * @param \WP_User $user Current user
+ * @param int $user_id User ID
+ * @param string $current_endpoint Current endpoint
+ * @param array $menu_items Menu items
+ * @return string HTML output
+ */
+private static function render_my_account_html( $user, int $user_id, string $current_endpoint, array $menu_items ): string {
+    // Get user first name
+    $user_first_name = ! empty( $user->first_name ) ? $user->first_name : $user->display_name;
+    
+    // Get greeting
+    $hour = (int) date('G');
+    if ( $hour >= 5 && $hour < 12 ) {
+        $greeting = 'Dobré ráno';
+    } elseif ( $hour >= 12 && $hour < 18 ) {
+        $greeting = 'Dobré odpoledne';
+    } else {
+        $greeting = 'Dobrý večer';
+    }
+    
+    $greeting_text = sprintf( '%s, %s!', $greeting, esc_html( $user_first_name ) );
+    
+    // Build navigation HTML
+    $nav_html = '<nav class="saw-my-account-nav"><ul class="saw-nav">';
+    
+    foreach ( $menu_items as $key => $item ) {
+        if ( $key === 'logout' ) {
+            $nav_html .= '<li class="saw-nav__separator"></li>';
+        }
+        
+        $item_classes = array( 'saw-nav__item' );
+        if ( ! empty( $item['active'] ) ) {
+            $item_classes[] = 'saw-nav__item--active';
+        }
+        if ( $key === 'logout' ) {
+            $item_classes[] = 'saw-nav__item--logout';
+        }
+        
+        $nav_html .= sprintf(
+            '<li class="%s">
+                <a href="%s" class="saw-nav__link"%s>
+                    <span class="saw-nav__icon">%s</span>
+                    <span class="saw-nav__text">%s</span>
+                </a>
+            </li>',
+            esc_attr( implode( ' ', $item_classes ) ),
+            esc_url( $item['url'] ),
+            ! empty( $item['active'] ) ? ' aria-current="page"' : '',
+            esc_html( $item['icon'] ),
+            esc_html( $item['title'] )
+        );
+    }
+    
+    $nav_html .= '</ul></nav>';
+    
+    // Get endpoint content
+    $content_html = self::get_endpoint_content( $current_endpoint, $user_id );
+    
+    // Build complete HTML
+    ob_start();
+    ?>
+    <div class="saw-my-account-wrapper">
+        
+        <div class="saw-my-account__header">
+            <div class="saw-my-account__greeting">
+                <h1 class="saw-my-account__title"><?php echo esc_html( $greeting_text ); ?></h1>
+                <p class="saw-my-account__subtitle"><?php esc_html_e( 'Vítejte ve vašem účtu', 'saw-wap' ); ?></p>
+            </div>
+            
+            <button class="saw-my-account__mobile-toggle" id="sawAccountMobileToggle" aria-label="Toggle menu" type="button">
+                <span class="saw-mobile-toggle__icon">☰</span>
+                <span class="saw-mobile-toggle__text">Menu</span>
+            </button>
+        </div>
+
+        <div class="saw-my-account__grid">
+            
+            <aside class="saw-my-account__sidebar" id="sawAccountSidebar">
+                <?php echo $nav_html; ?>
+            </aside>
+
+            <main class="saw-my-account__content">
+                <div class="saw-my-account__content-inner" id="sawContentArea">
+                    <?php echo $content_html; ?>
+                </div>
+            </main>
+
+        </div>
+
+        <footer class="saw-my-account__footer">
+            <p class="saw-my-account__footer-text">
+                <?php
+                printf( 
+                    esc_html__( 'Přihlášen jako: %s', 'saw-wap' ), 
+                    '<strong>' . esc_html( $user->user_email ) . '</strong>' 
+                );
+                ?>
+                 | 
+                <a href="<?php echo esc_url( wp_logout_url( home_url() ) ); ?>" class="saw-logout-link">
+                    <?php esc_html_e( 'Odhlásit se', 'saw-wap' ); ?>
+                </a>
+            </p>
+        </footer>
+
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Get endpoint content HTML
+ * 
+ * @param string $endpoint Endpoint name
+ * @param int $user_id User ID
+ * @return string HTML content
+ */
+private static function get_endpoint_content( string $endpoint, int $user_id ): string {
+    // Pro teď jen placeholder
+    switch ( $endpoint ) {
+        case 'dashboard':
+            return '<div style="padding: 40px; background: #e3f2fd; border-radius: 12px;">
+                <h2 style="margin: 0 0 16px;">📊 Dashboard</h2>
+                <p style="margin: 0;">Toto je dashboard. Obsah bude doplněn později.</p>
+            </div>';
+            
+        case 'courses':
+            return '<div style="padding: 40px; background: #f3e5f5; border-radius: 12px;">
+                <h2 style="margin: 0 0 16px;">🎓 Moje kurzy</h2>
+                <p style="margin: 0;">Toto jsou vaše kurzy. Obsah bude doplněn později.</p>
+            </div>';
+            
+        case 'orders':
+            return '<div style="padding: 40px; background: #e8f5e9; border-radius: 12px;">
+                <h2 style="margin: 0 0 16px;">📦 Objednávky</h2>
+                <p style="margin: 0;">Toto jsou vaše objednávky. Obsah bude doplněn později.</p>
+            </div>';
+            
+        default:
+            return '<div style="padding: 40px; background: #fff3e0; border-radius: 12px;">
+                <h2 style="margin: 0 0 16px;">⚠️ Sekce v přípravě</h2>
+                <p style="margin: 0;">Tato sekce bude brzy k dispozici.</p>
+            </div>';
+    }
+}
+
+
+
+
+
+
+
+
 
 	/**
 	 * Enqueue CSS and JS for My Account
@@ -172,10 +294,22 @@ class Shortcodes {
 		$current_user_id = get_current_user_id();
 		
 		if ( 0 === $current_user_id ) {
-			$login_url = wp_login_url( add_query_arg( 'token', $token, get_permalink() ) );
-			wp_safe_redirect( $login_url );
-			exit;
-		}
+    $login_url = wp_login_url( add_query_arg( 'token', $token, get_permalink() ) );
+    
+    return sprintf(
+        '<div style="padding: 80px 20px; text-align: center; background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); border-radius: 16px; margin: 40px 0;">
+            <div style="max-width: 500px; margin: 0 auto; background: white; padding: 60px 40px; border-radius: 12px;">
+                <div style="font-size: 72px; margin-bottom: 24px;">🔒</div>
+                <h2 style="font-size: 32px; margin: 0 0 16px 0; color: #1a1a1a;">Přihlášení vyžadováno</h2>
+                <p style="font-size: 18px; color: #666; margin: 0 0 40px 0;">Pro sledování videa se prosím přihlaste.</p>
+                <a href="%s" style="display: inline-block; padding: 18px 48px; background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); color: #fff; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 18px;">
+                    Přihlásit se →
+                </a>
+            </div>
+        </div>',
+        esc_url( $login_url )
+    );
+}
 		
 		try {
 			$token_manager = new VideoTokenManager();

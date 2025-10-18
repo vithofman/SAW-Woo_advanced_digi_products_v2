@@ -2,48 +2,42 @@
 /**
  * Template for [saw_my_account] shortcode
  * 
- * KRITICKÉ: Tento template NESMÍ obsahovat <html>, <head>, <body> tagy!
- * Musí vrátit pouze content pro kompatibilitu s Oxygen Builder.
- * 
- * Available variables:
- * @var WP_User $user             Current WordPress user object
- * @var int     $user_id          Current user ID
- * @var string  $current_endpoint Current active tab/endpoint
- * @var array   $menu_items       Navigation menu items
- * 
  * @package SAW\WAP\Templates
  * @since 1.0.0
  */
 
-declare(strict_types=1);
+// ✅ ZMĚNA #1: Odstranit declare(strict_types=1)
+// declare(strict_types=1);  ← ZAKOMENTUJ!
 
-// Security check - ALE NIKDY exit;!!!
+// ✅ ZMĚNA #2: Použít exit; jako video player
 if ( ! defined( 'ABSPATH' ) ) {
-	// Just stop rendering, don't exit!
-	return;
+	exit;
 }
 
-use SAW\WAP\Helpers\AccountHelpers;
+// ✅ ZMĚNA #3: Odstranit use statement
+// use SAW\WAP\Helpers\AccountHelpers;  ← ZAKOMENTUJ!
 
-// Zkontroluj že máme potřebné proměnné - ALE NEPOUŽÍVEJ return;!!!
-if ( ! isset( $user ) || ! isset( $user_id ) || ! isset( $current_endpoint ) || ! isset( $menu_items ) ) {
-	echo '<div class="saw-error">Chyba: Chybí potřebná data pro šablonu.</div>';
-	// NIKDY return; - to ukončí execution!
-	// Místo toho použij condition
-}
-
-// Get user first name for greeting
-$user_first_name = ! empty( $user->first_name ) ? $user->first_name : $user->display_name;
+// Variables available: $user, $user_id, $current_endpoint, $menu_items
 ?>
-
-<?php if ( isset( $user ) && isset( $user_id ) && isset( $current_endpoint ) && isset( $menu_items ) ) : ?>
 
 <div class="saw-my-account-wrapper">
 	
 	<div class="saw-my-account__header">
 		<div class="saw-my-account__greeting">
 			<h1 class="saw-my-account__title">
-				<?php echo esc_html( AccountHelpers::get_greeting( $user_first_name ) ); ?>
+				<?php 
+				// ✅ ZMĚNA #4: Použít přímo bez AccountHelpers
+				$user_first_name = ! empty( $user->first_name ) ? $user->first_name : $user->display_name;
+				$hour = (int) date('G');
+				if ( $hour >= 5 && $hour < 12 ) {
+					$greeting = 'Dobré ráno';
+				} elseif ( $hour >= 12 && $hour < 18 ) {
+					$greeting = 'Dobré odpoledne';
+				} else {
+					$greeting = 'Dobrý večer';
+				}
+				echo esc_html( sprintf( '%s, %s!', $greeting, $user_first_name ) );
+				?>
 			</h1>
 			<p class="saw-my-account__subtitle">
 				<?php esc_html_e( 'Vítejte ve vašem účtu', 'saw-wap' ); ?>
@@ -144,5 +138,3 @@ $user_first_name = ! empty( $user->first_name ) ? $user->first_name : $user->dis
 	</footer>
 
 </div>
-
-<?php endif; ?>
