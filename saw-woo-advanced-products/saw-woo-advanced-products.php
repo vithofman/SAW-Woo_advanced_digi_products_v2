@@ -252,9 +252,7 @@ register_activation_hook( __FILE__, function() {
     \SAW\WAP\Core\Database::create_tables();
     
     // NOVĚ PŘIDÁNO: Flush rewrite rules pro /watch/ endpoint
-    // Důležité: Musíme nejdřív načíst Videos class aby zaregistroval rules
-    require_once __DIR__ . '/inc/Core/Videos.php';
-    \SAW\WAP\Core\Videos::add_watch_endpoint();
+
     
     // Flush rules
     flush_rewrite_rules();

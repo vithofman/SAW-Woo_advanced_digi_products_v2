@@ -9,8 +9,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use SAW\WAP\Helpers\VideoHelpers;
-
 // Variables available: $video, $product, $all_videos, $progress, $prev_token, $next_token, $current_index, $access
 ?>
 
@@ -29,7 +27,7 @@ use SAW\WAP\Helpers\VideoHelpers;
 	
 	<!-- Video Player -->
 	<div class="saw-video-player">
-		<?php echo VideoHelpers::render_video_embed( $video->video_url, $video->video_provider, $video->video_title ); ?>
+		<?php echo \SAW\WAP\Helpers\VideoHelpers::render_video_embed( $video->video_url, $video->video_provider, $video->video_title ); ?>
 	</div>
 	
 	<!-- Navigation Buttons -->
@@ -57,11 +55,11 @@ use SAW\WAP\Helpers\VideoHelpers;
 		<div class="saw-meta-items">
 			<?php if ( $video->video_duration > 0 ) : ?>
 				<span class="saw-meta-item">
-					⏱️ Délka: <?php echo esc_html( VideoHelpers::format_duration( (int) $video->video_duration ) ); ?>
+					⏱️ Délka: <?php echo esc_html( \SAW\WAP\Helpers\VideoHelpers::format_duration( (int) $video->video_duration ) ); ?>
 				</span>
 			<?php endif; ?>
 			<span class="saw-meta-item">
-				🔒 <?php echo esc_html( VideoHelpers::format_access_expires( $access->access_expires ) ); ?>
+				🔒 <?php echo esc_html( \SAW\WAP\Helpers\VideoHelpers::format_access_expires( $access->access_expires ) ); ?>
 			</span>
 		</div>
 	</div>
@@ -96,12 +94,12 @@ use SAW\WAP\Helpers\VideoHelpers;
 				<?php foreach ( $all_videos as $idx => $lesson ) : ?>
 					<?php
 					$is_current = ( $idx === $current_index );
-					$is_completed = VideoHelpers::is_video_completed(
+					$is_completed = \SAW\WAP\Helpers\VideoHelpers::is_video_completed(
 						get_current_user_id(),
 						$product->get_id(),
 						(int) $lesson->video_index
 					);
-					$lesson_token = VideoHelpers::get_user_video_token(
+					$lesson_token = \SAW\WAP\Helpers\VideoHelpers::get_user_video_token(
 						get_current_user_id(),
 						$product->get_id(),
 						(int) $lesson->video_index
@@ -133,7 +131,7 @@ use SAW\WAP\Helpers\VideoHelpers;
 							<a href="<?php echo esc_url( home_url( '/watch/?token=' . $lesson_token ) ); ?>" class="saw-lesson-link">
 								<span class="saw-lesson-title"><?php echo esc_html( $lesson->video_title ); ?></span>
 								<?php if ( $lesson->video_duration > 0 ) : ?>
-									<span class="saw-lesson-duration">(<?php echo esc_html( VideoHelpers::format_duration( (int) $lesson->video_duration ) ); ?>)</span>
+									<span class="saw-lesson-duration">(<?php echo esc_html( \SAW\WAP\Helpers\VideoHelpers::format_duration( (int) $lesson->video_duration ) ); ?>)</span>
 								<?php endif; ?>
 							</a>
 						<?php else : ?>

@@ -5,8 +5,6 @@
  * @package SAW\WAP\Helpers
  */
 
-declare( strict_types=1 );
-
 namespace SAW\WAP\Helpers;
 
 /**
@@ -22,7 +20,7 @@ class VideoHelpers {
 	 * @param string $title Video title
 	 * @return string HTML iframe
 	 */
-	public static function render_video_embed( string $url, string $provider, string $title ): string {
+	public static function render_video_embed( $url, $provider, $title ) {
 		
 		// Auto-detect provider if empty
 		if ( empty( $provider ) || 'custom' === $provider ) {
@@ -78,7 +76,7 @@ class VideoHelpers {
 	 * @param string $url Video URL
 	 * @return string Provider
 	 */
-	private static function detect_provider( string $url ): string {
+	private static function detect_provider( $url ) {
 		if ( strpos( $url, 'youtube.com' ) !== false || strpos( $url, 'youtu.be' ) !== false ) {
 			return 'youtube';
 		}
@@ -96,7 +94,7 @@ class VideoHelpers {
 	 * @param string $url YouTube URL
 	 * @return string|null Video ID
 	 */
-	public static function extract_youtube_id( string $url ) {
+	public static function extract_youtube_id( $url ) {
 		// Pattern 1: youtube.com/watch?v=VIDEO_ID
 		if ( preg_match( '/[?&]v=([a-zA-Z0-9_-]{11})/', $url, $matches ) ) {
 			return $matches[1];
@@ -121,7 +119,7 @@ class VideoHelpers {
 	 * @param string $url Vimeo URL
 	 * @return string|null Video ID
 	 */
-	public static function extract_vimeo_id( string $url ) {
+	public static function extract_vimeo_id( $url ) {
 		// Pattern 1: vimeo.com/VIDEO_ID
 		if ( preg_match( '/vimeo\.com\/(\d+)/', $url, $matches ) ) {
 			return $matches[1];
@@ -141,7 +139,9 @@ class VideoHelpers {
 	 * @param int $seconds Duration in seconds
 	 * @return string Formatted duration
 	 */
-	public static function format_duration( int $seconds ): string {
+	public static function format_duration( $seconds ) {
+		$seconds = (int) $seconds;
+		
 		if ( $seconds < 60 ) {
 			return sprintf( '%d sec', $seconds );
 		}
@@ -167,7 +167,7 @@ class VideoHelpers {
 	 * @param string $expires_datetime MySQL datetime
 	 * @return string Formatted text
 	 */
-	public static function format_access_expires( string $expires_datetime ): string {
+	public static function format_access_expires( $expires_datetime ) {
 		$now = current_time( 'timestamp' );
 		$expires = strtotime( $expires_datetime );
 
@@ -191,8 +191,12 @@ class VideoHelpers {
 	 * @param int $video_index Video index
 	 * @return bool True if completed
 	 */
-	public static function is_video_completed( int $user_id, int $product_id, int $video_index ): bool {
+	public static function is_video_completed( $user_id, $product_id, $video_index ) {
 		global $wpdb;
+
+		$user_id = (int) $user_id;
+		$product_id = (int) $product_id;
+		$video_index = (int) $video_index;
 
 		$sessions_table = $wpdb->prefix . 'saw_video_watch_sessions';
 		$tokens_table = $wpdb->prefix . 'saw_video_access_tokens';
@@ -223,8 +227,12 @@ class VideoHelpers {
 	 * @param int $video_index Video index
 	 * @return string|null Token or null
 	 */
-	public static function get_user_video_token( int $user_id, int $product_id, int $video_index ) {
+	public static function get_user_video_token( $user_id, $product_id, $video_index ) {
 		global $wpdb;
+
+		$user_id = (int) $user_id;
+		$product_id = (int) $product_id;
+		$video_index = (int) $video_index;
 
 		$table_name = $wpdb->prefix . 'saw_video_access_tokens';
 
