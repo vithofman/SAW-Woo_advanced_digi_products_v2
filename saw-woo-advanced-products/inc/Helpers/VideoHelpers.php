@@ -17,21 +17,18 @@ class VideoHelpers {
 	/**
 	 * Render video embed iframe.
 	 *
-	 * Podporuje YouTube, Vimeo, a custom URL.
-	 *
-	 * @param string $url      Video URL.
-	 * @param string $provider Video provider ('youtube', 'vimeo', 'custom').
-	 * @param string $title    Video title pro accessibility.
-	 *
-	 * @return string HTML iframe tag.
+	 * @param string $url Video URL
+	 * @param string $provider Provider (youtube/vimeo/custom)
+	 * @param string $title Video title
+	 * @return string HTML iframe
 	 */
 	public static function render_video_embed( string $url, string $provider, string $title ): string {
-		// Auto-detect provider pokud není specifikovaný nebo je prázdný
+		
+		// Auto-detect provider if empty
 		if ( empty( $provider ) || 'custom' === $provider ) {
 			$provider = self::detect_provider( $url );
 		}
 
-		// Získat embed URL podle providera
 		$embed_url = '';
 
 		switch ( $provider ) {
@@ -57,12 +54,10 @@ class VideoHelpers {
 
 			case 'custom':
 			default:
-				// Pro custom URL použít přímo (např. self-hosted video)
 				$embed_url = esc_url( $url );
 				break;
 		}
 
-		// Pokud se nepodařilo získat embed URL, vrátit chybovou zprávu
 		if ( empty( $embed_url ) ) {
 			return sprintf(
 				'<div class="saw-video-error"><p>%s</p></div>',
@@ -70,22 +65,18 @@ class VideoHelpers {
 			);
 		}
 
-		// Vygenerovat iframe s bezpečnostními atributy
-		$iframe = sprintf(
-			'<iframe src="%s" frameborder="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation" title="%s" loading="lazy"></iframe>',
+		return sprintf(
+			'<div class="saw-video-embed"><iframe src="%s" frameborder="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen title="%s" loading="lazy"></iframe></div>',
 			esc_url( $embed_url ),
 			esc_attr( $title )
 		);
-
-		return $iframe;
 	}
 
 	/**
-	 * Auto-detect video provider z URL.
+	 * Auto-detect video provider from URL.
 	 *
-	 * @param string $url Video URL.
-	 *
-	 * @return string Provider ('youtube', 'vimeo', nebo 'custom').
+	 * @param string $url Video URL
+	 * @return string Provider
 	 */
 	private static function detect_provider( string $url ): string {
 		if ( strpos( $url, 'youtube.com' ) !== false || strpos( $url, 'youtu.be' ) !== false ) {
@@ -100,18 +91,12 @@ class VideoHelpers {
 	}
 
 	/**
-	 * Extract YouTube video ID z URL.
+	 * Extract YouTube video ID from URL.
 	 *
-	 * Podporuje formáty:
-	 * - https://www.youtube.com/watch?v=ABC123
-	 * - https://youtu.be/ABC123
-	 * - https://www.youtube.com/embed/ABC123
-	 *
-	 * @param string $url YouTube URL.
-	 *
-	 * @return string|null Video ID nebo null.
+	 * @param string $url YouTube URL
+	 * @return string|null Video ID
 	 */
-	public static function extract_youtube_id( string $url ): ?string {
+	public static function extract_youtube_id( string $url ) {
 		// Pattern 1: youtube.com/watch?v=VIDEO_ID
 		if ( preg_match( '/[?&]v=([a-zA-Z0-9_-]{11})/', $url, $matches ) ) {
 			return $matches[1];
@@ -131,17 +116,12 @@ class VideoHelpers {
 	}
 
 	/**
-	 * Extract Vimeo video ID z URL.
+	 * Extract Vimeo video ID from URL.
 	 *
-	 * Podporuje formáty:
-	 * - https://vimeo.com/123456789
-	 * - https://player.vimeo.com/video/123456789
-	 *
-	 * @param string $url Vimeo URL.
-	 *
-	 * @return string|null Video ID nebo null.
+	 * @param string $url Vimeo URL
+	 * @return string|null Video ID
 	 */
-	public static function extract_vimeo_id( string $url ): ?string {
+	public static function extract_vimeo_id( string $url ) {
 		// Pattern 1: vimeo.com/VIDEO_ID
 		if ( preg_match( '/vimeo\.com\/(\d+)/', $url, $matches ) ) {
 			return $matches[1];
@@ -156,88 +136,66 @@ class VideoHelpers {
 	}
 
 	/**
-	 * Format duration v sekundách na čitelný string.
+	 * Format duration in seconds to readable string.
 	 *
-	 * @param int $seconds Počet sekund.
-	 *
-	 * @return string Formátovaný čas.
+	 * @param int $seconds Duration in seconds
+	 * @return string Formatted duration
 	 */
 	public static function format_duration( int $seconds ): string {
 		if ( $seconds < 60 ) {
-			/* translators: %d: number of seconds */
-			return sprintf( _n( '%d sec', '%d sec', $seconds, 'saw-wap' ), $seconds );
+			return sprintf( '%d sec', $seconds );
 		}
 
 		if ( $seconds < 3600 ) {
 			$minutes = floor( $seconds / 60 );
-			/* translators: %d: number of minutes */
-			return sprintf( _n( '%d min', '%d min', $minutes, 'saw-wap' ), $minutes );
+			return sprintf( '%d min', $minutes );
 		}
 
-		$hours   = floor( $seconds / 3600 );
+		$hours = floor( $seconds / 3600 );
 		$minutes = floor( ( $seconds % 3600 ) / 60 );
 
 		if ( $minutes > 0 ) {
-			/* translators: 1: hours, 2: minutes */
-			return sprintf( __( '%1$dh %2$dmin', 'saw-wap' ), $hours, $minutes );
+			return sprintf( '%dh %dmin', $hours, $minutes );
 		}
 
-		/* translators: %d: number of hours */
-		return sprintf( _n( '%dh', '%dh', $hours, 'saw-wap' ), $hours );
+		return sprintf( '%dh', $hours );
 	}
 
 	/**
-	 * Format countdown do expirace tokenu.
+	 * Format access expiration.
 	 *
-	 * Vrací text, CSS třídu, a počet zbývajících dní.
-	 *
-	 * @param string $expires_datetime MySQL datetime string.
-	 *
-	 * @return array{text: string, class: string, days_left: int} Countdown data.
+	 * @param string $expires_datetime MySQL datetime
+	 * @return string Formatted text
 	 */
-	public static function format_countdown( string $expires_datetime ): array {
-		$now     = current_time( 'timestamp' );
+	public static function format_access_expires( string $expires_datetime ): string {
+		$now = current_time( 'timestamp' );
 		$expires = strtotime( $expires_datetime );
 
 		$diff_seconds = $expires - $now;
-		$days_left    = (int) floor( $diff_seconds / DAY_IN_SECONDS );
+		$days_left = (int) floor( $diff_seconds / DAY_IN_SECONDS );
 
-		// Určit text a CSS třídu podle zbývajících dní
 		if ( $days_left > 30 ) {
-			/* translators: %d: number of days */
-			$text  = sprintf( __( 'Přístup do: %d dní', 'saw-wap' ), $days_left );
-			$class = 'saw-countdown-ok';
+			return sprintf( 'Přístup do: %d dní', $days_left );
 		} elseif ( $days_left >= 7 ) {
-			/* translators: %d: number of days */
-			$text  = sprintf( __( 'Brzy vyprší: %d dní', 'saw-wap' ), $days_left );
-			$class = 'saw-countdown-warning';
+			return sprintf( 'Brzy vyprší: %d dní', $days_left );
 		} else {
-			/* translators: %d: number of days */
-			$text  = sprintf( __( 'POZOR: Vyprší za %d dní', 'saw-wap' ), max( 0, $days_left ) );
-			$class = 'saw-countdown-critical';
+			return sprintf( 'POZOR: Vyprší za %d dní', max( 0, $days_left ) );
 		}
-
-		return [
-			'text'      => $text,
-			'class'     => $class,
-			'days_left' => max( 0, $days_left ),
-		];
 	}
 
 	/**
-	 * Check pokud je video dokončené.
+	 * Check if video is completed.
 	 *
-	 * @param int $user_id     User ID.
-	 * @param int $product_id  Product ID.
-	 * @param int $video_index Video index.
-	 *
-	 * @return bool True pokud dokončeno.
+	 * @param int $user_id User ID
+	 * @param int $product_id Product ID
+	 * @param int $video_index Video index
+	 * @return bool True if completed
 	 */
 	public static function is_video_completed( int $user_id, int $product_id, int $video_index ): bool {
 		global $wpdb;
 
 		$sessions_table = $wpdb->prefix . 'saw_video_watch_sessions';
-		$tokens_table   = $wpdb->prefix . 'saw_video_access_tokens';
+		$tokens_table = $wpdb->prefix . 'saw_video_access_tokens';
 
 		$count = (int) $wpdb->get_var(
 			$wpdb->prepare(
@@ -258,35 +216,14 @@ class VideoHelpers {
 	}
 
 	/**
-	 * Get completion icon podle stavu.
+	 * Get token for specific video.
 	 *
-	 * @param bool $is_completed Je dokončené?
-	 * @param bool $is_current   Je aktuální?
-	 *
-	 * @return string HTML span s ikonou.
+	 * @param int $user_id User ID
+	 * @param int $product_id Product ID
+	 * @param int $video_index Video index
+	 * @return string|null Token or null
 	 */
-	public static function get_completion_icon( bool $is_completed, bool $is_current ): string {
-		if ( $is_completed ) {
-			return '<span class="saw-icon saw-icon-completed" aria-label="' . esc_attr__( 'Dokončeno', 'saw-wap' ) . '">✓</span>';
-		}
-
-		if ( $is_current ) {
-			return '<span class="saw-icon saw-icon-current" aria-label="' . esc_attr__( 'Aktuální', 'saw-wap' ) . '">►</span>';
-		}
-
-		return '<span class="saw-icon saw-icon-pending" aria-label="' . esc_attr__( 'Neshlédnuto', 'saw-wap' ) . '">○</span>';
-	}
-
-	/**
-	 * Get token pro konkrétní video uživatele.
-	 *
-	 * @param int $user_id     User ID.
-	 * @param int $product_id  Product ID.
-	 * @param int $video_index Video index.
-	 *
-	 * @return string|null Token nebo null.
-	 */
-	public static function get_user_video_token( int $user_id, int $product_id, int $video_index ): ?string {
+	public static function get_user_video_token( int $user_id, int $product_id, int $video_index ) {
 		global $wpdb;
 
 		$table_name = $wpdb->prefix . 'saw_video_access_tokens';
@@ -306,6 +243,6 @@ class VideoHelpers {
 			)
 		);
 
-		return $token ?: null;
+		return $token ? $token : null;
 	}
 }

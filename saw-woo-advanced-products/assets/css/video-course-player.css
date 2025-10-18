@@ -1,0 +1,379 @@
+/**
+ * SAW Video Course Player Styles
+ * 
+ * Standalone styling for video player (Oxygen compatible)
+ */
+
+/* === CSS Variables === */
+:root {
+	--saw-primary: #ff6b35;
+	--saw-success: #22c55e;
+	--saw-gray-50: #f9fafb;
+	--saw-gray-100: #f3f4f6;
+	--saw-gray-200: #e5e7eb;
+	--saw-gray-700: #374151;
+	--saw-gray-900: #111827;
+	--saw-spacing-sm: 0.5rem;
+	--saw-spacing-md: 1rem;
+	--saw-spacing-lg: 1.5rem;
+	--saw-spacing-xl: 2rem;
+	--saw-radius: 8px;
+}
+
+/* === Reset & Base === */
+.saw-watch-wrapper {
+	margin: 0;
+	padding: 0;
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	font-size: 16px;
+	line-height: 1.6;
+	color: var(--saw-gray-900);
+}
+
+.saw-watch-wrapper * {
+	box-sizing: border-box;
+}
+
+/* === Breadcrumbs === */
+.saw-breadcrumbs {
+	display: flex;
+	align-items: center;
+	gap: var(--saw-spacing-sm);
+	margin-bottom: var(--saw-spacing-lg);
+	font-size: 14px;
+	color: var(--saw-gray-700);
+	flex-wrap: wrap;
+}
+
+.saw-back-link {
+	color: var(--saw-gray-700);
+	text-decoration: none;
+	transition: color 0.3s;
+}
+
+.saw-back-link:hover {
+	color: var(--saw-primary);
+}
+
+.saw-separator {
+	color: var(--saw-gray-200);
+}
+
+/* === Video Player === */
+.saw-video-player {
+	margin-bottom: var(--saw-spacing-lg);
+}
+
+.saw-video-embed {
+	position: relative;
+	padding-bottom: 56.25%; /* 16:9 aspect ratio */
+	height: 0;
+	overflow: hidden;
+	background: #000;
+	border-radius: var(--saw-radius);
+}
+
+.saw-video-embed iframe {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border: 0;
+	border-radius: var(--saw-radius);
+}
+
+.saw-video-error {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 400px;
+	background: var(--saw-gray-100);
+	color: var(--saw-gray-700);
+	text-align: center;
+	padding: var(--saw-spacing-xl);
+	border-radius: var(--saw-radius);
+}
+
+/* === Navigation Buttons === */
+.saw-navigation {
+	display: flex;
+	justify-content: space-between;
+	gap: var(--saw-spacing-md);
+	margin-bottom: var(--saw-spacing-lg);
+}
+
+.saw-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--saw-spacing-sm);
+	padding: 12px 24px;
+	border: 2px solid var(--saw-primary);
+	border-radius: var(--saw-radius);
+	background: #fff;
+	color: var(--saw-primary);
+	font-size: 15px;
+	font-weight: 600;
+	text-decoration: none;
+	cursor: pointer;
+	transition: all 0.3s;
+	white-space: nowrap;
+}
+
+.saw-btn:hover:not(:disabled) {
+	background: var(--saw-primary);
+	color: #fff;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.saw-btn-disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+	border-color: var(--saw-gray-200);
+	color: var(--saw-gray-700);
+}
+
+/* === Video Meta === */
+.saw-video-meta {
+	margin-bottom: var(--saw-spacing-xl);
+	padding-bottom: var(--saw-spacing-lg);
+	border-bottom: 1px solid var(--saw-gray-200);
+}
+
+.saw-video-title {
+	font-size: 28px;
+	font-weight: 700;
+	color: var(--saw-gray-900);
+	margin: 0 0 var(--saw-spacing-md);
+	line-height: 1.3;
+}
+
+.saw-meta-items {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--saw-spacing-md);
+}
+
+.saw-meta-item {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--saw-spacing-sm);
+	font-size: 14px;
+	font-weight: 500;
+	padding: 8px 16px;
+	border-radius: 999px;
+	background: var(--saw-gray-100);
+	color: var(--saw-gray-700);
+}
+
+/* === Progress Bar === */
+.saw-progress-section {
+	margin-bottom: var(--saw-spacing-xl);
+}
+
+.saw-progress-text {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--saw-gray-700);
+	margin-bottom: var(--saw-spacing-sm);
+}
+
+.saw-progress-bar {
+	height: 8px;
+	background: var(--saw-gray-200);
+	border-radius: 999px;
+	overflow: hidden;
+}
+
+.saw-progress-fill {
+	height: 100%;
+	background: linear-gradient(90deg, var(--saw-success), var(--saw-primary));
+	border-radius: 999px;
+	transition: width 0.5s ease;
+}
+
+/* === Two Column Layout === */
+.saw-content-layout {
+	display: grid;
+	grid-template-columns: 2fr 1fr;
+	gap: var(--saw-spacing-xl);
+	margin-top: var(--saw-spacing-xl);
+}
+
+/* === Description === */
+.saw-description {
+	background: #fff;
+	padding: var(--saw-spacing-xl);
+	border-radius: var(--saw-radius);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.saw-section-title {
+	font-size: 20px;
+	font-weight: 600;
+	color: var(--saw-gray-900);
+	margin: 0 0 var(--saw-spacing-md);
+}
+
+.saw-description p {
+	margin-bottom: var(--saw-spacing-md);
+}
+
+.saw-description p:last-child {
+	margin-bottom: 0;
+}
+
+/* === Course Outline === */
+.saw-course-outline {
+	background: #fff;
+	padding: var(--saw-spacing-xl);
+	border-radius: var(--saw-radius);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	position: sticky;
+	top: 20px;
+}
+
+.saw-lesson-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.saw-lesson-item {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--saw-spacing-sm);
+	padding: var(--saw-spacing-md);
+	margin-bottom: var(--saw-spacing-sm);
+	border-radius: var(--saw-radius);
+	transition: background 0.2s;
+}
+
+.saw-lesson-item:hover {
+	background: var(--saw-gray-50);
+}
+
+.saw-lesson-item.saw-current {
+	background: #fff7ed;
+	border-left: 4px solid var(--saw-primary);
+	font-weight: 600;
+}
+
+.saw-lesson-item.saw-completed .saw-icon-completed {
+	color: var(--saw-success);
+}
+
+.saw-icon {
+	flex-shrink: 0;
+	width: 20px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 16px;
+	line-height: 1;
+	margin-top: 2px;
+}
+
+.saw-icon-completed {
+	color: var(--saw-success);
+}
+
+.saw-icon-current {
+	color: var(--saw-primary);
+}
+
+.saw-icon-pending {
+	color: var(--saw-gray-200);
+}
+
+.saw-lesson-link {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	text-decoration: none;
+	color: var(--saw-gray-900);
+	transition: color 0.2s;
+}
+
+.saw-lesson-link:hover {
+	color: var(--saw-primary);
+}
+
+.saw-lesson-title {
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 1.4;
+}
+
+.saw-lesson-duration {
+	font-size: 12px;
+	color: var(--saw-gray-700);
+}
+
+.saw-lesson-locked {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	gap: var(--saw-spacing-sm);
+	color: var(--saw-gray-700);
+	opacity: 0.5;
+	font-size: 14px;
+}
+
+.saw-lock-icon {
+	font-size: 16px;
+}
+
+/* === Responsive === */
+@media (max-width: 1024px) {
+	.saw-content-layout {
+		grid-template-columns: 1fr;
+	}
+	
+	.saw-course-outline {
+		position: static;
+	}
+}
+
+@media (max-width: 768px) {
+	.saw-video-title {
+		font-size: 22px;
+	}
+	
+	.saw-navigation {
+		flex-direction: column;
+	}
+	
+	.saw-btn {
+		width: 100%;
+		justify-content: center;
+	}
+	
+	.saw-meta-items {
+		flex-direction: column;
+		gap: var(--saw-spacing-sm);
+	}
+	
+	.saw-meta-item {
+		width: 100%;
+		justify-content: center;
+	}
+	
+	.saw-description,
+	.saw-course-outline {
+		padding: var(--saw-spacing-lg);
+	}
+	
+	.saw-breadcrumbs {
+		font-size: 12px;
+	}
+}
+
+/* === Accessibility === */
+.saw-watch-wrapper :focus-visible {
+	outline: 2px solid var(--saw-primary);
+	outline-offset: 2px;
+}
