@@ -37,14 +37,16 @@ class Shortcodes {
 		// Get token from URL
 		$token = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
 		
-		// OPRAVA: Odstraň trailing slash
-		$token = rtrim( $token, '/' );
+		// ✅ OPRAVA: Jen trim whitespace, NE lomítka
+		$token = trim( $token );
 		
 		if ( empty( $token ) ) {
 			return self::render_error( 'missing_token' );
 		}
 		
+		// Validace formátu tokenu
 		if ( ! preg_match( '/^[a-f0-9]{64}$/', $token ) ) {
+			error_log( 'SAW-WAP: Invalid token format: ' . $token . ' (length: ' . strlen($token) . ')' );
 			return self::render_error( 'invalid_format' );
 		}
 		
@@ -53,10 +55,11 @@ class Shortcodes {
 		$access = $token_manager->validateToken( $token );
 		
 		if ( ! $access ) {
+			error_log( 'SAW-WAP: Token validation failed for: ' . $token );
 			return self::render_error( 'invalid_token' );
 		}
 		
-		// Security check
+		// Security check - musí být přihlášený
 		$current_user_id = get_current_user_id();
 		
 		if ( 0 === $current_user_id ) {
@@ -65,7 +68,9 @@ class Shortcodes {
 			exit;
 		}
 		
+		// Security check - token musí patřit přihlášenému uživateli
 		if ( (int) $access->user_id !== $current_user_id ) {
+			error_log( 'SAW-WAP: User ID mismatch. Token user: ' . $access->user_id . ', Current user: ' . $current_user_id );
 			return self::render_error( 'access_denied' );
 		}
 		
@@ -73,12 +78,14 @@ class Shortcodes {
 		$video = self::get_video_by_token( $access );
 		
 		if ( ! $video ) {
+			error_log( 'SAW-WAP: Video not found for product ' . $access->product_id . ', index ' . $access->video_index );
 			return self::render_error( 'video_not_found' );
 		}
 		
 		$product = wc_get_product( $access->product_id );
 		
 		if ( ! $product ) {
+			error_log( 'SAW-WAP: Product not found: ' . $access->product_id );
 			return self::render_error( 'product_not_found' );
 		}
 		

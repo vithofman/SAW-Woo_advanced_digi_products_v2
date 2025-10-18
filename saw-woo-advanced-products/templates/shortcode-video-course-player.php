@@ -1,6 +1,6 @@
 <?php
 /**
- * Video course player template
+ * Video course player template (pro shortcode)
  *
  * @package SAW\WAP\Templates
  */
@@ -33,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<!-- Navigation Buttons -->
 	<div class="saw-navigation">
 		<?php if ( $prev_token ) : ?>
-			<a href="<?php echo esc_url( home_url( '/watch/?token=' . $prev_token ) ); ?>" class="saw-btn saw-btn-prev">
+			<a href="<?php echo esc_url( add_query_arg( 'token', $prev_token, get_permalink() ) ); ?>" class="saw-btn saw-btn-prev">
 				← Předchozí lekce
 			</a>
 		<?php else : ?>
@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php endif; ?>
 		
 		<?php if ( $next_token ) : ?>
-			<a href="<?php echo esc_url( home_url( '/watch/?token=' . $next_token ) ); ?>" class="saw-btn saw-btn-next">
+			<a href="<?php echo esc_url( add_query_arg( 'token', $next_token, get_permalink() ) ); ?>" class="saw-btn saw-btn-next">
 				Další lekce →
 			</a>
 		<?php else : ?>
@@ -55,7 +55,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div class="saw-meta-items">
 			<?php if ( $video->video_duration > 0 ) : ?>
 				<span class="saw-meta-item">
-					⏱️ Délka: <?php echo esc_html( \SAW\WAP\Helpers\VideoHelpers::format_duration( (int) $video->video_duration ) ); ?>
+				⏱️ Délka: <?php echo esc_html( \SAW\WAP\Helpers\VideoHelpers::format_duration( (int) $video->video_duration ) ); ?>
 				</span>
 			<?php endif; ?>
 			<span class="saw-meta-item">
@@ -67,7 +67,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<!-- Progress Bar -->
 	<div class="saw-progress-section">
 		<div class="saw-progress-text">
-			Dokončeno: <?php echo (int) $progress['completed']; ?> z <?php echo (int) $progress['total']; ?> lekcí (<?php echo esc_html( $progress['percent'] ); ?>%)
+			Dokončeno: <?php echo (int) $progress['completed']; ?> z <?php echo (int) $progress['total']; ?> lekcí (<?php echo esc_html( number_format( $progress['percent'], 1 ) ); ?>%)
 		</div>
 		<div class="saw-progress-bar">
 			<div class="saw-progress-fill" style="width: <?php echo esc_attr( (string) $progress['percent'] ); ?>%"></div>
@@ -128,7 +128,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<?php endif; ?>
 						
 						<?php if ( $lesson_token ) : ?>
-							<a href="<?php echo esc_url( home_url( '/watch/?token=' . $lesson_token ) ); ?>" class="saw-lesson-link">
+							<a href="<?php echo esc_url( add_query_arg( 'token', $lesson_token, get_permalink() ) ); ?>" class="saw-lesson-link">
 								<span class="saw-lesson-title"><?php echo esc_html( $lesson->video_title ); ?></span>
 								<?php if ( $lesson->video_duration > 0 ) : ?>
 									<span class="saw-lesson-duration">(<?php echo esc_html( \SAW\WAP\Helpers\VideoHelpers::format_duration( (int) $lesson->video_duration ) ); ?>)</span>

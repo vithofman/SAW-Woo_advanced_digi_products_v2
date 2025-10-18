@@ -162,7 +162,7 @@ class VideoHelpers {
 	}
 
 	/**
-	 * Format access expiration.
+	 * Format access expiration countdown
 	 *
 	 * @param string $expires_datetime MySQL datetime
 	 * @return string Formatted text
