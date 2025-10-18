@@ -147,9 +147,104 @@ class Videos {
 			die( 'STOPPED AT: Exception - ' . $e->getMessage() );
 		}
 
-		echo '<div style="background:#9c27b0;color:#fff;padding:15px;margin:10px;border:2px solid #6a1b9a;font-family:monospace;font-size:14px;"><strong>SAW DEBUG 17:</strong> WE MADE IT THIS FAR!</div>';
+		echo '<div style="background:#4caf50;color:#fff;padding:15px;margin:10px;border:2px solid #2e7d32;font-family:monospace;font-size:14px;"><strong>SAW DEBUG 17:</strong> ✅ Token validated! Continuing to load video data...</div>';
 
-		die( 'DEBUG: Manually stopping here to see how far we got' );
+// 3. Zkontrolovat že user_id z tokenu = přihlášený user
+if ( (int) $access->user_id !== $current_user_id ) {
+    echo '<div style="background:#f44336;color:#fff;padding:15px;margin:10px;border:2px solid #b71c1c;"><strong>SAW DEBUG 18:</strong> SECURITY ERROR: Token user_id (' . esc_html($access->user_id) . ') != logged in user (' . $current_user_id . ')</div>';
+    self::redirect_with_error( 
+        wc_get_account_endpoint_url( 'dashboard' ),
+        __( 'Tento token nepatří vašemu účtu.', 'saw-wap' )
+    );
+    return;
+}
+
+echo '<div style="background:#4caf50;color:#fff;padding:15px;margin:10px;border:2px solid #2e7d32;"><strong>SAW DEBUG 19:</strong> User ID matches! (' . $current_user_id . ')</div>';
+
+// 4. Získat video metadata z DB
+echo '<div style="background:#2196f3;color:#fff;padding:15px;margin:10px;border:2px solid #1565c0;"><strong>SAW DEBUG 20:</strong> Loading video metadata...</div>';
+
+$video = self::get_video_by_token( $access );
+
+if ( ! $video ) {
+    echo '<div style="background:#f44336;color:#fff;padding:15px;margin:10px;border:2px solid #b71c1c;"><strong>SAW DEBUG 21:</strong> Video NOT FOUND in metadata table!</div>';
+    self::redirect_with_error(
+        wc_get_account_endpoint_url( 'dashboard' ),
+        __( 'Video nebylo nalezeno.', 'saw-wap' )
+    );
+    return;
+}
+
+echo '<div style="background:#4caf50;color:#fff;padding:15px;margin:10px;border:2px solid #2e7d32;"><strong>SAW DEBUG 22:</strong> Video loaded! Title: ' . esc_html($video->video_title) . '</div>';
+
+// 5. Získat product
+echo '<div style="background:#2196f3;color:#fff;padding:15px;margin:10px;border:2px solid #1565c0;"><strong>SAW DEBUG 23:</strong> Loading product...</div>';
+
+$product = wc_get_product( $access->product_id );
+
+if ( ! $product ) {
+    echo '<div style="background:#f44336;color:#fff;padding:15px;margin:10px;border:2px solid #b71c1c;"><strong>SAW DEBUG 24:</strong> Product NOT FOUND!</div>';
+    wp_die( esc_html__( 'Produkt nebyl nalezen.', 'saw-wap' ) );
+}
+
+echo '<div style="background:#4caf50;color:#fff;padding:15px;margin:10px;border:2px solid #2e7d32;"><strong>SAW DEBUG 25:</strong> Product loaded! Name: ' . esc_html($product->get_name()) . '</div>';
+
+// 6. Získat všechna videa produktu (pro sidebar)
+echo '<div style="background:#2196f3;color:#fff;padding:15px;margin:10px;border:2px solid #1565c0;"><strong>SAW DEBUG 26:</strong> Loading all product videos...</div>';
+
+$all_videos = self::get_all_product_videos( $access->product_id );
+
+echo '<div style="background:#4caf50;color:#fff;padding:15px;margin:10px;border:2px solid #2e7d32;"><strong>SAW DEBUG 27:</strong> Loaded ' . count($all_videos) . ' videos total</div>';
+
+// 7. Najít current index
+$current_index = null;
+foreach ( $all_videos as $idx => $v ) {
+    if ( (int) $v->video_index === (int) $access->video_index ) {
+        $current_index = $idx;
+        break;
+    }
+}
+
+echo '<div style="background:#2196f3;color:#fff;padding:15px;margin:10px;border:2px solid #1565c0;"><strong>SAW DEBUG 28:</strong> Current video index in list: ' . esc_html((string)$current_index) . '</div>';
+
+// 8. Získat prev/next tokeny pro navigaci
+$prev_token = null;
+$next_token = null;
+
+if ( $current_index > 0 ) {
+    $prev_video = $all_videos[ $current_index - 1 ];
+    $prev_token = self::get_user_video_token( $current_user_id, $access->product_id, (int) $prev_video->video_index );
+}
+
+if ( $current_index < count( $all_videos ) - 1 ) {
+    $next_video = $all_videos[ $current_index + 1 ];
+    $next_token = self::get_user_video_token( $current_user_id, $access->product_id, (int) $next_video->video_index );
+}
+
+echo '<div style="background:#2196f3;color:#fff;padding:15px;margin:10px;border:2px solid #1565c0;"><strong>SAW DEBUG 29:</strong> Navigation tokens - Prev: ' . ($prev_token ? 'YES' : 'NO') . ', Next: ' . ($next_token ? 'YES' : 'NO') . '</div>';
+
+// 9. Získat progress
+$progress = self::get_user_progress( $current_user_id, $access->product_id );
+
+echo '<div style="background:#2196f3;color:#fff;padding:15px;margin:10px;border:2px solid #1565c0;"><strong>SAW DEBUG 30:</strong> Progress: ' . $progress['completed'] . '/' . $progress['total'] . ' (' . $progress['percent'] . '%)</div>';
+
+// 10. Připravit data pro template
+global $saw_watch_data;
+$saw_watch_data = [
+    'access'        => $access,
+    'video'         => $video,
+    'product'       => $product,
+    'all_videos'    => $all_videos,
+    'current_index' => $current_index,
+    'prev_token'    => $prev_token,
+    'next_token'    => $next_token,
+    'progress'      => $progress,
+];
+
+echo '<div style="background:#4caf50;color:#fff;padding:15px;margin:10px;border:2px solid #2e7d32;"><strong>SAW DEBUG 31:</strong> ✅ All data prepared! Loading template...</div>';
+
+// 11. Načíst template
+self::load_watch_template();
 	}
 
 	/**

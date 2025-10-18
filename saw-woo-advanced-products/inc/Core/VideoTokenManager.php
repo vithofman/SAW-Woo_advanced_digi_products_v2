@@ -8,7 +8,7 @@
  * @package SAW\WAP\Core
  */
 
-declare( strict_types=1 );
+// REMOVED: declare( strict_types=1 ); - This was causing the fatal error!
 
 namespace SAW\WAP\Core;
 
@@ -51,7 +51,7 @@ class VideoTokenManager {
 	 *
 	 * @var string
 	 */
-	private string $tokens_table;
+	private $tokens_table;
 
 	/**
 	 * Constructor.
@@ -87,12 +87,18 @@ class VideoTokenManager {
 	 * @throws \Exception Pokud nelze vygenerovat unikátní token po MAX_GENERATION_ATTEMPTS pokusech.
 	 */
 	public function generateToken(
-		int $user_id,
-		int $product_id,
-		int $video_index,
-		int $order_id,
-		?int $access_days = null
-	): string {
+		$user_id,
+		$product_id,
+		$video_index,
+		$order_id,
+		$access_days = null
+	) {
+		// Cast to int
+		$user_id     = (int) $user_id;
+		$product_id  = (int) $product_id;
+		$video_index = (int) $video_index;
+		$order_id    = (int) $order_id;
+		
 		// Validace vstupů
 		if ( $user_id <= 0 || $product_id <= 0 || $video_index < 0 || $order_id <= 0 ) {
 			$this->log_error( 'Invalid parameters for token generation', compact( 'user_id', 'product_id', 'video_index', 'order_id' ) );
@@ -175,7 +181,7 @@ class VideoTokenManager {
 	 *
 	 * @return object|null Objekt s přístupovými daty nebo null pokud neplatný.
 	 */
-	public function validateToken( string $token ): ?object {
+	public function validateToken( $token ) {
 		// Validace formátu tokenu (64 hex znaků)
 		if ( ! preg_match( '/^[a-f0-9]{64}$/', $token ) ) {
 			$this->log_debug( 'Invalid token format', compact( 'token' ) );
@@ -219,9 +225,9 @@ class VideoTokenManager {
 		$this->update_token_usage( $access->id );
 
 		$this->log_info( 'Token validated successfully', [
-			'token_id'   => $access->id,
-			'user_id'    => $access->user_id,
-			'product_id' => $access->product_id,
+			'token_id'    => $access->id,
+			'user_id'     => $access->user_id,
+			'product_id'  => $access->product_id,
 			'video_index' => $access->video_index,
 		] );
 
@@ -240,7 +246,7 @@ class VideoTokenManager {
 	 *
 	 * @return bool True pokud úspěšně deaktivován.
 	 */
-	public function revokeToken( string $token ): bool {
+	public function revokeToken( $token ) {
 		$updated = $this->wpdb->update(
 			$this->tokens_table,
 			[ 'is_active' => 0 ],
@@ -266,7 +272,9 @@ class VideoTokenManager {
 	 *
 	 * @return bool True pokud úspěšně prodlouženo.
 	 */
-	public function extendAccess( string $token, int $days ): bool {
+	public function extendAccess( $token, $days ) {
+		$days = (int) $days;
+		
 		if ( $days <= 0 ) {
 			$this->log_error( 'Invalid days parameter for extendAccess', compact( 'token', 'days' ) );
 			return false;
@@ -325,7 +333,10 @@ class VideoTokenManager {
 	 *
 	 * @return array Array objektů s tokeny.
 	 */
-	public function getUserProductTokens( int $user_id, int $product_id ): array {
+	public function getUserProductTokens( $user_id, $product_id ) {
+		$user_id    = (int) $user_id;
+		$product_id = (int) $product_id;
+		
 		$tokens = $this->wpdb->get_results(
 			$this->wpdb->prepare(
 				"SELECT * FROM {$this->tokens_table} 
@@ -350,7 +361,7 @@ class VideoTokenManager {
 	 *
 	 * @return string SHA256 hash (64 hex znaků).
 	 */
-	private function generate_unique_token( int $user_id, int $product_id, int $video_index, int $order_id ): string {
+	private function generate_unique_token( $user_id, $product_id, $video_index, $order_id ) {
 		// Komponenty pro hash
 		$components = [
 			$user_id,
@@ -384,23 +395,23 @@ class VideoTokenManager {
 	 * @return bool True pokud úspěšně vloženo.
 	 */
 	private function insert_token_record(
-		int $user_id,
-		int $product_id,
-		int $video_index,
-		int $order_id,
-		string $token,
-		int $access_days
-	): bool {
+		$user_id,
+		$product_id,
+		$video_index,
+		$order_id,
+		$token,
+		$access_days
+	) {
 		$now            = current_time( 'mysql' );
 		$access_expires = gmdate( 'Y-m-d H:i:s', strtotime( $now ) + ( $access_days * DAY_IN_SECONDS ) );
 
 		$inserted = $this->wpdb->insert(
 			$this->tokens_table,
 			[
-				'user_id'        => $user_id,
-				'product_id'     => $product_id,
-				'video_index'    => $video_index,
-				'order_id'       => $order_id,
+				'user_id'        => (int) $user_id,
+				'product_id'     => (int) $product_id,
+				'video_index'    => (int) $video_index,
+				'order_id'       => (int) $order_id,
 				'access_token'   => $token,
 				'access_granted' => $now,
 				'access_expires' => $access_expires,
@@ -428,7 +439,9 @@ class VideoTokenManager {
 	 *
 	 * @return void
 	 */
-	private function update_token_usage( int $token_id ): void {
+	private function update_token_usage( $token_id ) {
+		$token_id = (int) $token_id;
+		
 		$now = current_time( 'mysql' );
 		$ip  = $this->get_client_ip();
 
@@ -453,7 +466,7 @@ class VideoTokenManager {
 	 *
 	 * @return int Počet dní.
 	 */
-	private function get_product_access_days( int $product_id ): int {
+	private function get_product_access_days( $product_id ) {
 		$product = wc_get_product( $product_id );
 
 		if ( ! $product ) {
@@ -470,7 +483,7 @@ class VideoTokenManager {
 	 *
 	 * @return string IP adresa.
 	 */
-	private function get_client_ip(): string {
+	private function get_client_ip() {
 		$ip_keys = [
 			'HTTP_CF_CONNECTING_IP', // Cloudflare
 			'HTTP_X_FORWARDED_FOR',  // Proxy/Load balancer
@@ -507,7 +520,7 @@ class VideoTokenManager {
 	 *
 	 * @return void
 	 */
-	private function log_info( string $message, array $context = [] ): void {
+	private function log_info( $message, $context = [] ) {
 		if ( ! defined( 'WP_DEBUG' ) || ! WP_DEBUG ) {
 			return;
 		}
@@ -524,7 +537,7 @@ class VideoTokenManager {
 	 *
 	 * @return void
 	 */
-	private function log_debug( string $message, array $context = [] ): void {
+	private function log_debug( $message, $context = [] ) {
 		if ( ! defined( 'WP_DEBUG' ) || ! WP_DEBUG ) {
 			return;
 		}
@@ -541,7 +554,7 @@ class VideoTokenManager {
 	 *
 	 * @return void
 	 */
-	private function log_error( string $message, array $context = [] ): void {
+	private function log_error( $message, $context = [] ) {
 		$context_str = ! empty( $context ) ? ' | ' . wp_json_encode( $context ) : '';
 		error_log( sprintf( 'SAW-WAP [ERROR] VideoTokenManager: %s%s', $message, $context_str ) );
 	}
