@@ -1,87 +1,104 @@
 <?php
 /**
- * Admin notices for token regeneration
- * 
- * Zobrazuje notices v adminu po automatické nebo manuální regeneraci tokenů.
- * 
+ * Admin notices pro regeneraci tokenů
+ *
  * @package SAW\WAP\Admin
  */
 
-declare( strict_types=1 );
+declare(strict_types=1);
 
 namespace SAW\WAP\Admin;
 
-/**
- * Class RegenerateNotices
- */
+if (!defined('ABSPATH')) {
+	exit;
+}
+
 class RegenerateNotices {
 
 	/**
-	 * Initialize hooks.
+	 * Initialize hooks
 	 */
 	public static function init(): void {
-		add_action( 'admin_notices', [ self::class, 'show_regenerate_notice' ] );
+		// Registruj hook na admin_notices s nízkou prioritou
+		add_action('admin_notices', [__CLASS__, 'show_regenerate_notice'], 10);
+		
+		// DEBUG log že se třída inicializovala
+		if (defined('WP_DEBUG') && WP_DEBUG) {
+			error_log('SAW-WAP [DEBUG] RegenerateNotices: Class initialized, hook registered');
+		}
 	}
 
 	/**
-	 * Show admin notice after regeneration.
+	 * Zobrazit admin notice po regeneraci
 	 */
 	public static function show_regenerate_notice(): void {
-		// Pouze na edit product page
-		$screen = get_current_screen();
-		if ( ! $screen || 'product' !== $screen->id ) {
+		// DEBUG: Log že se metoda volá
+		if (defined('WP_DEBUG') && WP_DEBUG) {
+			error_log('SAW-WAP [DEBUG] RegenerateNotices: show_regenerate_notice() called');
+		}
+		
+		// Získat transient KEY
+		$transient_key = 'saw_regenerate_notice_' . get_current_user_id();
+		
+		// DEBUG: Log transient key
+		if (defined('WP_DEBUG') && WP_DEBUG) {
+			error_log('SAW-WAP [DEBUG] RegenerateNotices: Looking for transient: ' . $transient_key);
+		}
+		
+		// Získat transient
+		$notice = get_transient($transient_key);
+		
+		// DEBUG: Log transient result
+		if (defined('WP_DEBUG') && WP_DEBUG) {
+			if ($notice) {
+				error_log('SAW-WAP [DEBUG] RegenerateNotices: Transient FOUND - ' . wp_json_encode($notice));
+			} else {
+				error_log('SAW-WAP [DEBUG] RegenerateNotices: Transient NOT FOUND');
+			}
+		}
+		
+		// Pokud není transient, return
+		if (!$notice) {
 			return;
 		}
-
-		// Získat transient s výsledky
-		$notice = get_transient( 'saw_regenerate_notice_' . get_current_user_id() );
-
-		if ( ! $notice ) {
-			return;
-		}
-
+		
 		// Smazat transient (zobrazí se jen jednou)
-		delete_transient( 'saw_regenerate_notice_' . get_current_user_id() );
-
-		// Připravit zprávu
-		$type           = isset( $notice['type'] ) ? $notice['type'] : 'info';
-		$tokens_created = isset( $notice['tokens_created'] ) ? (int) $notice['tokens_created'] : 0;
-		$customers      = isset( $notice['customers'] ) ? (int) $notice['customers'] : 0;
-		$errors         = isset( $notice['errors'] ) ? $notice['errors'] : [];
-
-		// CSS třída podle typu
+		delete_transient($transient_key);
+		
+		// DEBUG: Log že mažeme transient
+		if (defined('WP_DEBUG') && WP_DEBUG) {
+			error_log('SAW-WAP [DEBUG] RegenerateNotices: Transient deleted, displaying notice');
+		}
+		
+		// Připravit data
+		$type = isset($notice['type']) ? $notice['type'] : 'info';
+		$tokens_created = isset($notice['tokens_created']) ? (int)$notice['tokens_created'] : 0;
+		$customers = isset($notice['customers']) ? (int)$notice['customers'] : 0;
+		$errors = isset($notice['errors']) ? $notice['errors'] : [];
+		
+		// CSS třída
 		$css_class = 'success' === $type ? 'notice-success' : 'notice-info';
-
+		
 		?>
-		<div class="notice <?php echo esc_attr( $css_class ); ?> is-dismissible">
-			<p>
-				<strong><?php esc_html_e( 'SAW-WAP: Regenerace tokenů', 'saw-wap' ); ?></strong>
-			</p>
-
-			<?php if ( $tokens_created > 0 ) : ?>
+		<div class="notice <?php echo esc_attr($css_class); ?> is-dismissible">
+			<p><strong>🔄 SAW-WAP: Regenerace tokenů</strong></p>
+			
+			<?php if ($tokens_created > 0) : ?>
 				<p>
-					<?php
-					printf(
-						/* translators: 1: number of tokens, 2: number of customers */
-						esc_html__( '✅ Vytvořeno %1$d nových tokenů pro %2$d zákazníků.', 'saw-wap' ),
-						$tokens_created,
-						$customers
-					);
-					?>
+					✅ Vytvořeno <strong><?php echo esc_html($tokens_created); ?></strong> nových tokenů 
+					pro <strong><?php echo esc_html($customers); ?></strong> zákazníků.
 				</p>
 			<?php else : ?>
 				<p>
-					<?php esc_html_e( 'ℹ️ Žádné nové tokeny nebyly vytvořeny. Všichni zákazníci už mají přístup ke všem videím.', 'saw-wap' ); ?>
+					ℹ️ Žádné nové tokeny nebyly vytvořeny. Všichni zákazníci už mají přístup ke všem videím.
 				</p>
 			<?php endif; ?>
-
-			<?php if ( ! empty( $errors ) ) : ?>
-				<p>
-					<strong><?php esc_html_e( '⚠️ Některé tokeny se nepodařilo vytvořit:', 'saw-wap' ); ?></strong>
-				</p>
+			
+			<?php if (!empty($errors)) : ?>
+				<p><strong>⚠️ Některé tokeny se nepodařilo vytvořit:</strong></p>
 				<ul style="list-style: disc; margin-left: 20px;">
-					<?php foreach ( $errors as $error ) : ?>
-						<li><?php echo esc_html( $error ); ?></li>
+					<?php foreach ($errors as $error) : ?>
+						<li><?php echo esc_html($error); ?></li>
 					<?php endforeach; ?>
 				</ul>
 			<?php endif; ?>
