@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<ruleset name="SAW Woo Advanced Products">
+    <description>WordPress coding standards for SAW – Woo Advanced Products.</description>
+    <rule ref="WordPress"/>
+    <rule ref="WordPress-Extra"/>
+    <rule ref="WordPress-Docs"/>
+    <file>./</file>
+    <exclude-pattern>vendor/*</exclude-pattern>
+    <exclude-pattern>node_modules/*</exclude-pattern>
+</ruleset>

@@ -1,0 +1,17 @@
+{
+  "name": "307p/saw-woo-advanced-products",
+  "type": "wordpress-plugin",
+  "autoload": {
+    "psr-4": {
+      "SAW\\\\WAP\\\\": "inc/"
+    }
+  },
+  "require": {},
+  "require-dev": {
+    "squizlabs/php_codesniffer": "^3.8",
+    "wp-coding-standards/wpcs": "^3.0"
+  },
+  "scripts": {
+    "lint": "php -l saw-woo-advanced-products.php && vendor/bin/phpcs -q"
+  }
+}

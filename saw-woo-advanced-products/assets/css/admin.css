@@ -1,0 +1,88 @@
+/* Admin styles for SAW – Woo Advanced Products */
+.sawwap-digital-panel .sawwap-admin-card,
+.sawwap-discount-builder .sawwap-settings-card {
+    margin: 16px 0;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+}
+
+.sawwap-repeater__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.sawwap-repeater__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.sawwap-repeater__item input[type="url"],
+.sawwap-repeater__item input[type="number"] {
+    flex: 1;
+}
+
+.sawwap-repeater__handle {
+    cursor: move;
+    color: #50575e;
+}
+
+.sawwap-repeater__actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+}
+
+.sawwap-repeater-table .column-actions {
+    width: 48px;
+    text-align: center;
+}
+
+.sawwap-repeater-table input[type="number"] {
+    width: 100%;
+}
+
+.sawwap-bundle-field .select2-container {
+    width: 100% !important;
+}
+
+.sawwap-discount-builder .sawwap-settings-card {
+    margin-bottom: 20px;
+}
+
+.sawwap-settings-card legend {
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.sawwap-settings-card__body {
+    margin-top: 12px;
+    padding-left: 4px;
+}
+
+.js .sawwap-settings-card__body.is-hidden {
+    display: none;
+}
+
+.sawwap-discount-table {
+    width: 100%;
+    margin-top: 8px;
+}
+
+.sawwap-discount-table th,
+.sawwap-discount-table td {
+    padding: 6px;
+}
+
+.sawwap-discount-quantity-rows input[type="number"] {
+    width: 100%;
+}
+
+.sawwap-discount-helper {
+    margin-top: 8px;
+    font-style: italic;
+}
