@@ -27,7 +27,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	
 	<!-- Video Player -->
 	<div class="saw-video-player">
-		<?php echo \SAW\WAP\Helpers\VideoHelpers::render_video_embed( $video->video_url, $video->video_provider, $video->video_title ); ?>
+		<!-- ✅ AKTUALIZOVÁNO - Přidány data attributes pro tracking (Krok 1.7) -->
+		<div class="saw-video-wrapper"
+		     data-token-id="<?php echo esc_attr( (string) $access->id ); ?>"
+		     data-video-index="<?php echo esc_attr( (string) $video->video_index ); ?>"
+		     data-product-id="<?php echo esc_attr( (string) $product->get_id() ); ?>">
+			<?php echo \SAW\WAP\Helpers\VideoHelpers::render_video_embed( $video->video_url, $video->video_provider, $video->video_title ); ?>
+		</div>
 	</div>
 	
 	<!-- Navigation Buttons -->

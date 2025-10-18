@@ -243,11 +243,44 @@ class Shortcodes {
 	 * Enqueue assets
 	 */
 	private static function enqueue_assets(): void {
+		// CSS pro video player (základní)
 		wp_enqueue_style(
 			'sawwap-video-course-player',
 			SAW_WAP_URL . 'assets/css/video-course-player.css',
 			array(),
 			'1.0.0'
+		);
+		
+		// ✅ NOVĚ PŘIDÁNO - CSS pro watch video (obsahuje progress bar styly)
+		wp_enqueue_style(
+			'sawwap-watch-video',
+			SAW_WAP_URL . 'assets/css/watch-video.css',
+			array(),
+			'1.0.0'
+		);
+		
+		// ✅ NOVĚ PŘIDÁNO - JavaScript tracker
+		wp_enqueue_script(
+			'sawwap-video-player-tracker',
+			SAW_WAP_URL . 'assets/js/video-player-tracker.js',
+			array('jquery'),
+			'1.0.0',
+			true
+		);
+		
+		// ✅ NOVĚ PŘIDÁNO - Localize script pro AJAX
+		wp_localize_script(
+			'sawwap-video-player-tracker',
+			'sawwapWatchData',
+			array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'saw_watch_nonce' ),
+				'strings' => array(
+					'loading'       => __( 'Načítání...', 'saw-wap' ),
+					'error'         => __( 'Nastala chyba. Zkuste to prosím znovu.', 'saw-wap' ),
+					'progressSaved' => __( 'Progress uložen', 'saw-wap' ),
+				),
+			)
 		);
 	}
 
