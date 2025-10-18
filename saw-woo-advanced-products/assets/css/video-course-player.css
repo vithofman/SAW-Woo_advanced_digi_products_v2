@@ -377,3 +377,97 @@
 	outline: 2px solid var(--saw-primary);
 	outline-offset: 2px;
 }
+
+
+/**
+ * ✅ Progress Bar Animations
+ * Přidat do: assets/css/video-course-player.css nebo watch-video.css
+ */
+
+/* Smooth transition pro progress bar */
+.saw-progress-fill {
+	transition: width 1s ease-in-out;
+}
+
+/* Pulsing effect když se update progress */
+.saw-progress-updated .saw-progress-bar {
+	animation: saw-pulse 0.5s ease-in-out;
+}
+
+@keyframes saw-pulse {
+	0%, 100% { 
+		transform: scale(1); 
+		box-shadow: 0 0 0 rgba(16, 185, 129, 0);
+	}
+	50% { 
+		transform: scale(1.02); 
+		box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+	}
+}
+
+/* Zelený glow effect pro completed ikonu */
+.saw-lesson-item.saw-completed .saw-icon-completed {
+	animation: saw-completed-glow 0.5s ease-in-out;
+}
+
+@keyframes saw-completed-glow {
+	0% { 
+		opacity: 0; 
+		transform: scale(0.5);
+	}
+	50% { 
+		transform: scale(1.2);
+	}
+	100% { 
+		opacity: 1; 
+		transform: scale(1);
+	}
+}
+
+/* ✅ Notification styles (pokud ještě nemáš) */
+.saw-notification {
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	padding: 16px 24px;
+	border-radius: 8px;
+	background: #fff;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	z-index: 9999;
+	font-size: 16px;
+	font-weight: 500;
+	animation: saw-notification-slide 0.3s ease-out;
+}
+
+@keyframes saw-notification-slide {
+	from {
+		transform: translateX(400px);
+		opacity: 0;
+	}
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
+}
+
+.saw-notification-success {
+	background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+	color: #fff;
+}
+
+.saw-notification-error {
+	background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+	color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.saw-notification {
+		top: auto;
+		bottom: 20px;
+		right: 10px;
+		left: 10px;
+		font-size: 14px;
+		padding: 12px 16px;
+	}
+}

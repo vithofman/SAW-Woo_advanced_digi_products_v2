@@ -2,6 +2,9 @@
 /**
  * Video session management.
  *
+ * ✅ SIMPLIFIED VERSION
+ * ❌ REMOVED: update_progress (nepoužíváme)
+ *
  * @package SAW\WAP\Core
  */
 
@@ -16,8 +19,6 @@ class VideoSessions {
 
 	/**
 	 * Verify že token patří uživateli.
-	 * 
-	 * Prevence: User nemůže trackovat cizí videa.
 	 * 
 	 * @param int $token_id Token ID
 	 * @param int $user_id  User ID
@@ -41,14 +42,10 @@ class VideoSessions {
 	}
 
 	/**
-	 * Start novou session nebo get existující.
-	 * 
-	 * Strategie: 
-	 * - Pokud už má incomplete session pro tento token → use that
-	 * - Jinak create new
+	 * Start novou session nebo reuse existující incomplete.
 	 * 
 	 * @param int $token_id Token ID
-	 * @return int|null Session ID nebo null při chybě
+	 * @return int|null Session ID nebo null
 	 */
 	public static function start_session( int $token_id ): ?int {
 		global $wpdb;
@@ -68,7 +65,7 @@ class VideoSessions {
 		);
 
 		if ( $existing ) {
-			// Update session_start = teď (nová návštěva)
+			// Update session_start (nová návštěva)
 			$wpdb->update(
 				$table,
 				[ 'session_start' => current_time( 'mysql' ) ],
@@ -84,15 +81,13 @@ class VideoSessions {
 		$inserted = $wpdb->insert(
 			$table,
 			[
-				'token_id'         => $token_id,
-				'session_start'    => current_time( 'mysql' ),
-				'watch_duration'   => 0,
-				'progress_percent' => 0,
-				'completed'        => 0,
-				'ip_address'       => self::get_client_ip(),
-				'user_agent'       => self::get_user_agent(),
+				'token_id'      => $token_id,
+				'session_start' => current_time( 'mysql' ),
+				'completed'     => 0,
+				'ip_address'    => self::get_client_ip(),
+				'user_agent'    => self::get_user_agent(),
 			],
-			[ '%d', '%s', '%d', '%d', '%d', '%s', '%s' ]
+			[ '%d', '%s', '%d', '%s', '%s' ]
 		);
 
 		if ( false === $inserted ) {
@@ -106,35 +101,14 @@ class VideoSessions {
 	}
 
 	/**
-	 * Update progress pro session.
-	 * 
-	 * @param int $session_id       Session ID
-	 * @param int $watch_duration   Celkový watch time (sekundy)
-	 * @param int $progress_percent 0-100 procent
-	 * @return bool True při úspěchu
+	 * ❌ REMOVED: update_progress()
+	 * Už nepoužíváme auto-save každých 10s
 	 */
-	public static function update_progress( int $session_id, int $watch_duration, int $progress_percent ): bool {
-		global $wpdb;
-
-		$table = $wpdb->prefix . 'saw_video_watch_sessions';
-
-		$updated = $wpdb->update(
-			$table,
-			[
-				'watch_duration'   => $watch_duration,
-				'progress_percent' => $progress_percent,
-				'session_end'      => current_time( 'mysql' ),
-			],
-			[ 'id' => $session_id ],
-			[ '%d', '%d', '%s' ],
-			[ '%d' ]
-		);
-
-		return false !== $updated;
-	}
 
 	/**
 	 * Mark session jako completed.
+	 * 
+	 * ✅ SIMPLIFIED: Jen nastavit completed = 1
 	 * 
 	 * @param int $session_id Session ID
 	 * @return bool True při úspěchu
@@ -144,15 +118,12 @@ class VideoSessions {
 
 		$table = $wpdb->prefix . 'saw_video_watch_sessions';
 
+		// ✅ ZJEDNODUŠENO: Jen completed flag
 		$updated = $wpdb->update(
 			$table,
-			[
-				'completed'        => 1,
-				'progress_percent' => 100,
-				'session_end'      => current_time( 'mysql' ),
-			],
+			[ 'completed' => 1 ],
 			[ 'id' => $session_id ],
-			[ '%d', '%d', '%s' ],
+			[ '%d' ],
 			[ '%d' ]
 		);
 
@@ -163,7 +134,7 @@ class VideoSessions {
 	 * Get session data.
 	 * 
 	 * @param int $session_id Session ID
-	 * @return object|null Session object nebo null
+	 * @return object|null Session object
 	 */
 	public static function get_session( int $session_id ): ?object {
 		global $wpdb;
@@ -183,9 +154,7 @@ class VideoSessions {
 	/**
 	 * Get client IP address.
 	 * 
-	 * Supports: Cloudflare, proxy headers, direct connection.
-	 * 
-	 * @return string IP address (IPv4 nebo IPv6)
+	 * @return string IP address
 	 */
 	private static function get_client_ip(): string {
 		$ip_keys = [
@@ -199,14 +168,13 @@ class VideoSessions {
 			if ( ! empty( $_SERVER[ $key ] ) ) {
 				$ip = sanitize_text_field( wp_unslash( $_SERVER[ $key ] ) );
 
-				// Handle comma-separated list (X-Forwarded-For)
+				// Handle comma-separated list
 				if ( strpos( $ip, ',' ) !== false ) {
 					$ip = explode( ',', $ip )[0];
 				}
 
 				$ip = trim( $ip );
 
-				// Validate IP
 				if ( filter_var( $ip, FILTER_VALIDATE_IP ) ) {
 					return $ip;
 				}
@@ -228,7 +196,6 @@ class VideoSessions {
 
 		$user_agent = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) );
 		
-		// Truncate to 255 chars (DB column limit)
 		return substr( $user_agent, 0, 255 );
 	}
 }
