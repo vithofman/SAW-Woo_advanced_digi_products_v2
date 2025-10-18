@@ -37,6 +37,9 @@ class Shortcodes {
 		// Get token from URL
 		$token = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
 		
+		// OPRAVA: Odstraň trailing slash
+		$token = rtrim( $token, '/' );
+		
 		if ( empty( $token ) ) {
 			return self::render_error( 'missing_token' );
 		}

@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use SAW\WAP\Helpers\VideoHelpers;
+
 // Variables available: $video, $product, $all_videos, $progress, $prev_token, $next_token, $current_index, $access
 ?>
 
