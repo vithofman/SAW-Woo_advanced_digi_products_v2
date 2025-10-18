@@ -160,10 +160,6 @@ final class Plugin {
             Core\Account::init();
         }
 
-        if ( class_exists( Core\Videos::class ) ) {
-            Core\Videos::init();
-        }
-
         if ( class_exists( Core\Events::class ) ) {
             Core\Events::init();
         }

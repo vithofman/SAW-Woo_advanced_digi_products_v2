@@ -33,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<!-- Navigation Buttons -->
 	<div class="saw-navigation">
 		<?php if ( $prev_token ) : ?>
-			<a href="<?php echo esc_url( add_query_arg( 'token', $prev_token ) ); ?>" class="saw-btn saw-btn-prev">
+			<a href="<?php echo esc_url( home_url( '/watch/?token=' . $prev_token ) ); ?>" class="saw-btn saw-btn-prev">
 				← Předchozí lekce
 			</a>
 		<?php else : ?>
@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php endif; ?>
 		
 		<?php if ( $next_token ) : ?>
-			<a href="<?php echo esc_url( add_query_arg( 'token', $next_token ) ); ?>" class="saw-btn saw-btn-next">
+			<a href="<?php echo esc_url( home_url( '/watch/?token=' . $next_token ) ); ?>" class="saw-btn saw-btn-next">
 				Další lekce →
 			</a>
 		<?php else : ?>
@@ -128,7 +128,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<?php endif; ?>
 						
 						<?php if ( $lesson_token ) : ?>
-							<a href="<?php echo esc_url( add_query_arg( 'token', $lesson_token ) ); ?>" class="saw-lesson-link">
+							<a href="<?php echo esc_url( home_url( '/watch/?token=' . $lesson_token ) ); ?>" class="saw-lesson-link">
 								<span class="saw-lesson-title"><?php echo esc_html( $lesson->video_title ); ?></span>
 								<?php if ( $lesson->video_duration > 0 ) : ?>
 									<span class="saw-lesson-duration">(<?php echo esc_html( VideoHelpers::format_duration( (int) $lesson->video_duration ) ); ?>)</span>
