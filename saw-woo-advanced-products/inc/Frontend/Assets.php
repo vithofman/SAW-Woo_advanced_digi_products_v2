@@ -44,6 +44,15 @@ class Assets {
 		wp_register_script( 'sawwap-pdp-ui', SAW_WAP_URL . 'assets/js/pdp-ui.js', $deps, Plugin::VERSION, true );
 		wp_register_script( 'sawwap-watch-video-ui', SAW_WAP_URL . 'assets/js/watch-video-ui.js', $deps, Plugin::VERSION, true );
 		
+		// Video player tracker (NOVĚ PŘIDÁNO - Krok 1.7)
+		wp_register_script( 
+			'sawwap-video-player-tracker', 
+			SAW_WAP_URL . 'assets/js/video-player-tracker.js', 
+			[ 'jquery' ], 
+			Plugin::VERSION, 
+			true 
+		);
+		
 		// Admin JS
 		wp_register_script( 'sawwap-admin', SAW_WAP_URL . 'assets/js/admin.js', [ 'jquery' ], Plugin::VERSION, true );
 		wp_register_script( 
@@ -86,8 +95,9 @@ class Assets {
 			
 			// Enqueue watch video JavaScript
 			wp_enqueue_script( 'sawwap-watch-video-ui' );
+			wp_enqueue_script( 'sawwap-video-player-tracker' ); // NOVĚ PŘIDÁNO - Krok 1.7
 			
-			// Localize script pro případné AJAX funkce (budoucí Krok 1.7)
+			// Localize script pro AJAX funkce
 			wp_localize_script(
 				'sawwap-watch-video-ui',
 				'sawwapWatchData',

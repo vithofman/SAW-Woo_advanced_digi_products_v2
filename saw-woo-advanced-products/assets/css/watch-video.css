@@ -518,3 +518,83 @@
 		display: none;
 	}
 }
+
+
+/* === Video Progress (Sidebar) === */
+.saw-lesson-progress {
+	margin-top: 8px;
+	display: none;
+}
+
+.saw-lesson-progress-bar {
+	height: 4px;
+	background: var(--saw-gray-200);
+	border-radius: 999px;
+	overflow: hidden;
+	margin-bottom: 4px;
+}
+
+.saw-lesson-progress-fill {
+	height: 100%;
+	background: linear-gradient(90deg, var(--saw-success), var(--saw-primary));
+	border-radius: 999px;
+	transition: width 0.3s ease;
+}
+
+.saw-lesson-progress-text {
+	font-size: 11px;
+	color: var(--saw-gray-700);
+	font-weight: 600;
+}
+
+/* === Notifications === */
+.saw-notification {
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	padding: 16px 24px;
+	background: #fff;
+	border-radius: 8px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	z-index: 9999;
+	display: none;
+	max-width: 400px;
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.saw-notification-error {
+	border-left: 4px solid var(--saw-danger);
+	color: var(--saw-danger);
+}
+
+.saw-notification-success {
+	border-left: 4px solid var(--saw-success);
+	color: var(--saw-success);
+}
+
+/* Animation */
+@keyframes slideIn {
+	from {
+		transform: translateX(400px);
+		opacity: 0;
+	}
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
+}
+
+.saw-notification {
+	animation: slideIn 0.3s ease-out;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+	.saw-notification {
+		top: 10px;
+		right: 10px;
+		left: 10px;
+		max-width: none;
+	}
+}

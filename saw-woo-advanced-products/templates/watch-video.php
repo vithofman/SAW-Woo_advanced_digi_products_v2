@@ -76,7 +76,11 @@ do_action( 'saw_before_watch_content', $video, $product, $access );
 <!-- Video player sekce -->
 <div class="saw-video-section">
 	<div class="saw-container">
-		<div class="saw-video-wrapper" data-video-index="<?php echo esc_attr( (string) $video->video_index ); ?>">
+		<!-- ✅ AKTUALIZOVÁNO - Přidány data attributes pro Krok 1.7 -->
+		<div class="saw-video-wrapper" 
+		     data-token-id="<?php echo esc_attr( (string) $access->id ); ?>"
+		     data-video-index="<?php echo esc_attr( (string) $video->video_index ); ?>"
+		     data-product-id="<?php echo esc_attr( (string) $product->get_id() ); ?>">
 			<?php 
 			echo VideoHelpers::render_video_embed(
 				$video->video_url,
