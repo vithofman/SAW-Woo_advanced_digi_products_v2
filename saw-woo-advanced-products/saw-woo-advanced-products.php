@@ -168,7 +168,7 @@ final class Plugin {
             Core\Upgrades::maybe_upgrade();
         }
 
-        // ✅ NOVÝ: Video Token Regenerator
+        // ✅ PŘIDÁNO: Video Token Regenerator
         if ( class_exists( Core\VideoTokenRegenerator::class ) ) {
             Core\VideoTokenRegenerator::init();
         }
@@ -179,11 +179,6 @@ final class Plugin {
 
         if ( class_exists( Admin\Settings::class ) ) {
             Admin\Settings::init();
-        }
-
-        // ✅ NOVÝ: Regenerate Notices
-        if ( class_exists( Admin\RegenerateNotices::class ) ) {
-            Admin\RegenerateNotices::init();
         }
 
         if ( class_exists( Frontend\Assets::class ) ) {
