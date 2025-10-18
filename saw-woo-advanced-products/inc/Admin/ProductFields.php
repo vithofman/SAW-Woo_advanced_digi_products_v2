@@ -12,7 +12,7 @@ namespace SAW\WAP\Admin;
 use WC_Product;
 
 /**
- * Registers the "SAW – Digital Content" product tab in WooCommerce.
+ * Registers the "SAW – Digital Content" product tab and video repeater meta box.
  */
 class ProductFields {
     /**
@@ -24,9 +24,20 @@ class ProductFields {
      * Initialize hooks.
      */
     public static function init(): void {
+        // Registrujeme custom tab v WooCommerce product data
         add_filter( 'woocommerce_product_data_tabs', [ self::class, 'register_tab' ] );
+        
+        // Vykreslíme obsah tabu
         add_action( 'woocommerce_product_data_panels', [ self::class, 'render_panel' ] );
+        
+        // Uložíme data při save produktu
         add_action( 'woocommerce_admin_process_product_object', [ self::class, 'save_product_fields' ] );
+        
+        // Přidáme meta box pro video repeater
+        add_action( 'add_meta_boxes', [ self::class, 'add_video_meta_box' ] );
+        
+        // Save handler pro video meta box
+        add_action( 'save_post', [ self::class, 'save_video_meta_box' ], 10, 2 );
     }
 
     /**
@@ -47,7 +58,7 @@ class ProductFields {
     }
 
     /**
-     * Render the product data panel.
+     * Render the product data panel (základní nastavení).
      */
     public static function render_panel(): void {
         $product = wc_get_product();
@@ -61,124 +72,434 @@ class ProductFields {
         <div id="sawwap_digital_product_data" class="panel woocommerce_options_panel hidden">
             <div class="options_group">
                 <?php
+                // Checkbox: Je toto video produkt?
                 woocommerce_wp_checkbox(
                     [
                         'id'          => 'sawwap_is_video_product',
-                        'label'       => __( 'Is digital video product', 'saw-wap' ),
+                        'label'       => __( 'Je toto video produkt', 'saw-wap' ),
                         'value'       => $meta['sawwap_is_video_product'] ? 'yes' : 'no',
-                        'description' => __( 'Enable access control and PDP enhancements for this product.', 'saw-wap' ),
+                        'description' => __( 'Aktivuje video systém a access control pro tento produkt.', 'saw-wap' ),
                     ]
                 );
 
-                woocommerce_wp_select(
-                    [
-                        'id'          => 'sawwap_video_provider',
-                        'label'       => __( 'Video provider', 'saw-wap' ),
-                        'options'     => [
-                            ''         => __( 'Select provider', 'saw-wap' ),
-                            'youtube'  => __( 'YouTube', 'saw-wap' ),
-                            'vimeo'    => __( 'Vimeo', 'saw-wap' ),
-                        ],
-                        'value'       => $meta['sawwap_video_provider'],
-                        'description' => __( 'Choose the streaming provider for embeds.', 'saw-wap' ),
-                    ]
-                );
-
-                woocommerce_wp_text_input(
-                    [
-                        'id'          => 'sawwap_video_url',
-                        'label'       => __( 'Primary video URL', 'saw-wap' ),
-                        'value'       => $meta['sawwap_video_url'],
-                        'placeholder' => 'https://',
-                        'description' => __( 'Single lesson URL. Leave empty when using multi-lesson JSON below.', 'saw-wap' ),
-                    ]
-                );
-
-                woocommerce_wp_textarea_input(
-                    [
-                        'id'          => 'sawwap_video_urls',
-                        'label'       => __( 'Lesson URLs (JSON)', 'saw-wap' ),
-                        'value'       => $meta['sawwap_video_urls'],
-                        'description' => __( 'JSON array of lesson URLs. Example: ["https://..."]', 'saw-wap' ),
-                    ]
-                );
-
-                woocommerce_wp_text_input(
-                    [
-                        'id'                => 'sawwap_video_duration',
-                        'label'             => __( 'Video duration (minutes)', 'saw-wap' ),
-                        'value'             => $meta['sawwap_video_duration'] > 0 ? (string) $meta['sawwap_video_duration'] : '',
-                        'type'              => 'number',
-                        'description'       => __( 'Approximate running time in minutes.', 'saw-wap' ),
-                        'custom_attributes' => [
-                            'min' => '0',
-                            'step' => '1',
-                        ],
-                    ]
-                );
-
+                // Text input: Výchozí délka přístupu (dny)
                 woocommerce_wp_text_input(
                     [
                         'id'                => 'sawwap_access_days',
-                        'label'             => __( 'Access duration (days)', 'saw-wap' ),
+                        'label'             => __( 'Délka přístupu (dny)', 'saw-wap' ),
                         'value'             => (string) $meta['sawwap_access_days'],
                         'type'              => 'number',
-                        'description'       => __( 'Number of days the customer keeps access (default 365).', 'saw-wap' ),
+                        'description'       => __( 'Počet dní po zakoupení. Výchozí: 365.', 'saw-wap' ),
                         'custom_attributes' => [
-                            'min' => '0',
+                            'min'  => '0',
                             'step' => '1',
                         ],
                     ]
                 );
 
+                // Textarea: Poznámky k produktu (interní)
                 woocommerce_wp_textarea_input(
                     [
-                        'id'          => 'sawwap_promo_tiers',
-                        'label'       => __( 'Promo tiers (JSON)', 'saw-wap' ),
-                        'value'       => $meta['sawwap_promo_tiers'],
-                        'description' => __( 'JSON array of objects {"limit":int,"price":float}. TODO: Replace with repeater UI.', 'saw-wap' ),
-                    ]
-                );
-
-                woocommerce_wp_text_input(
-                    [
-                        'id'          => 'sawwap_promo_until',
-                        'label'       => __( 'Promo valid until', 'saw-wap' ),
-                        'value'       => $meta['sawwap_promo_until'],
-                        'description' => __( 'Date in Y-m-d H:i:s. Leave blank for no expiry.', 'saw-wap' ),
-                    ]
-                );
-
-                woocommerce_wp_textarea_input(
-                    [
-                        'id'          => 'sawwap_bundle_items',
-                        'label'       => __( 'Bundle product IDs (JSON)', 'saw-wap' ),
-                        'value'       => $meta['sawwap_bundle_items'],
-                        'description' => __( 'JSON array of related product IDs. TODO: Replace with selector UI.', 'saw-wap' ),
-                    ]
-                );
-
-                woocommerce_wp_text_input(
-                    [
-                        'id'                => 'sawwap_points_award',
-                        'label'             => __( 'Points award override', 'saw-wap' ),
-                        'value'             => $meta['sawwap_points_award'] > 0 ? (string) $meta['sawwap_points_award'] : '',
-                        'type'              => 'number',
-                        'description'       => __( 'Override default points reward. Leave empty for automatic calculation.', 'saw-wap' ),
-                        'custom_attributes' => [
-                            'min' => '0',
-                            'step' => '1',
-                        ],
+                        'id'          => 'sawwap_internal_notes',
+                        'label'       => __( 'Interní poznámky', 'saw-wap' ),
+                        'value'       => $meta['sawwap_internal_notes'],
+                        'description' => __( 'Poznámky viditelné pouze v adminu.', 'saw-wap' ),
                     ]
                 );
                 ?>
+            </div>
+
+            <div class="options_group">
+                <p class="form-field">
+                    <strong><?php esc_html_e( 'Video lekce spravujte v meta boxu níže na stránce.', 'saw-wap' ); ?></strong>
+                </p>
             </div>
         </div>
         <?php
     }
 
     /**
-     * Retrieve product meta values with defaults.
+     * Add video repeater meta box.
+     */
+    public static function add_video_meta_box(): void {
+        add_meta_box(
+            'sawwap_video_lessons',
+            __( 'SAW – Video lekce', 'saw-wap' ),
+            [ self::class, 'render_video_meta_box' ],
+            'product',
+            'normal',
+            'high'
+        );
+    }
+
+    /**
+     * Render video repeater meta box.
+     *
+     * @param \WP_Post $post Current post object.
+     */
+    public static function render_video_meta_box( \WP_Post $post ): void {
+        // Nonce pro bezpečnost
+        wp_nonce_field( 'sawwap_save_videos', 'sawwap_videos_nonce' );
+
+        // Získáme existující videa z DB
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'saw_video_metadata';
+        
+        $videos = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM {$table_name} 
+                 WHERE product_id = %d 
+                 ORDER BY lesson_order ASC",
+                $post->ID
+            ),
+            ARRAY_A
+        );
+
+        // Pokud nejsou videa, vytvoříme prázdný template
+        if ( empty( $videos ) ) {
+            $videos = [ self::get_empty_video_template() ];
+        }
+
+        ?>
+        <div class="sawwap-video-repeater-wrapper">
+            <div class="sawwap-video-repeater-header">
+                <p class="description">
+                    <?php esc_html_e( 'Přidejte video lekce pro tento kurz. První video může být označeno jako ZDARMA (preview).', 'saw-wap' ); ?>
+                </p>
+            </div>
+
+            <div class="sawwap-video-repeater-container" id="sawwap-video-repeater">
+                <?php foreach ( $videos as $index => $video ) : ?>
+                    <?php self::render_video_row( $video, $index ); ?>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="sawwap-video-repeater-footer">
+                <button type="button" class="button button-primary sawwap-add-video">
+                    <span class="dashicons dashicons-plus-alt"></span>
+                    <?php esc_html_e( 'Přidat video', 'saw-wap' ); ?>
+                </button>
+            </div>
+
+            <!-- Template pro nové video (hidden) -->
+            <script type="text/template" id="sawwap-video-row-template">
+                <?php self::render_video_row( self::get_empty_video_template(), '__INDEX__' ); ?>
+            </script>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render single video row.
+     *
+     * @param array<string,mixed> $video Video data.
+     * @param int|string          $index Row index.
+     */
+    private static function render_video_row( array $video, $index ): void {
+        ?>
+        <div class="sawwap-video-row" data-index="<?php echo esc_attr( (string) $index ); ?>">
+            <div class="sawwap-video-row-header">
+                <span class="sawwap-video-handle dashicons dashicons-menu"></span>
+                <span class="sawwap-video-title-preview">
+                    <?php echo esc_html( $video['video_title'] ?: __( 'Nová lekce', 'saw-wap' ) ); ?>
+                </span>
+                <div class="sawwap-video-actions">
+                    <button type="button" class="button sawwap-toggle-video" aria-label="<?php esc_attr_e( 'Rozbalit/sbalit', 'saw-wap' ); ?>">
+                        <span class="dashicons dashicons-arrow-down-alt2"></span>
+                    </button>
+                    <button type="button" class="button sawwap-remove-video" aria-label="<?php esc_attr_e( 'Odstranit', 'saw-wap' ); ?>">
+                        <span class="dashicons dashicons-trash"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="sawwap-video-row-content" style="display: <?php echo 0 === $index ? 'block' : 'none'; ?>;">
+                <!-- Hidden ID field (pokud už video existuje v DB) -->
+                <input type="hidden" 
+                       name="sawwap_videos[<?php echo esc_attr( (string) $index ); ?>][id]" 
+                       value="<?php echo esc_attr( (string) ( $video['id'] ?? '' ) ); ?>" />
+
+                <!-- Video index (pro propojení s tokeny) -->
+                <input type="hidden" 
+                       name="sawwap_videos[<?php echo esc_attr( (string) $index ); ?>][video_index]" 
+                       value="<?php echo esc_attr( (string) ( $video['video_index'] ?? $index ) ); ?>" />
+
+                <!-- Lesson order (aktualizuje se při drag & drop) -->
+                <input type="hidden" 
+                       class="sawwap-lesson-order"
+                       name="sawwap_videos[<?php echo esc_attr( (string) $index ); ?>][lesson_order]" 
+                       value="<?php echo esc_attr( (string) ( $video['lesson_order'] ?? $index ) ); ?>" />
+
+                <table class="form-table">
+                    <tbody>
+                        <tr>
+                            <th scope="row">
+                                <label for="sawwap_video_title_<?php echo esc_attr( (string) $index ); ?>">
+                                    <?php esc_html_e( 'Název lekce', 'saw-wap' ); ?>
+                                    <span class="required">*</span>
+                                </label>
+                            </th>
+                            <td>
+                                <input type="text" 
+                                       id="sawwap_video_title_<?php echo esc_attr( (string) $index ); ?>"
+                                       name="sawwap_videos[<?php echo esc_attr( (string) $index ); ?>][video_title]"
+                                       value="<?php echo esc_attr( $video['video_title'] ?? '' ); ?>"
+                                       class="regular-text sawwap-video-title-input"
+                                       required />
+                                <p class="description">
+                                    <?php esc_html_e( 'Název videa který uvidí uživatelé.', 'saw-wap' ); ?>
+                                </p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th scope="row">
+                                <label for="sawwap_video_url_<?php echo esc_attr( (string) $index ); ?>">
+                                    <?php esc_html_e( 'URL videa', 'saw-wap' ); ?>
+                                    <span class="required">*</span>
+                                </label>
+                            </th>
+                            <td>
+                                <input type="url" 
+                                       id="sawwap_video_url_<?php echo esc_attr( (string) $index ); ?>"
+                                       name="sawwap_videos[<?php echo esc_attr( (string) $index ); ?>][video_url]"
+                                       value="<?php echo esc_attr( $video['video_url'] ?? '' ); ?>"
+                                       class="large-text"
+                                       placeholder="https://youtube.com/watch?v=... nebo https://vimeo.com/..."
+                                       required />
+                                <p class="description">
+                                    <?php esc_html_e( 'YouTube nebo Vimeo URL. Poskytovatel se detekuje automaticky.', 'saw-wap' ); ?>
+                                </p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th scope="row">
+                                <label for="sawwap_video_provider_<?php echo esc_attr( (string) $index ); ?>">
+                                    <?php esc_html_e( 'Poskytovatel', 'saw-wap' ); ?>
+                                </label>
+                            </th>
+                            <td>
+                                <select id="sawwap_video_provider_<?php echo esc_attr( (string) $index ); ?>"
+                                        name="sawwap_videos[<?php echo esc_attr( (string) $index ); ?>][video_provider]">
+                                    <option value="" <?php selected( $video['video_provider'] ?? '', '' ); ?>>
+                                        <?php esc_html_e( 'Automaticky', 'saw-wap' ); ?>
+                                    </option>
+                                    <option value="youtube" <?php selected( $video['video_provider'] ?? '', 'youtube' ); ?>>
+                                        YouTube
+                                    </option>
+                                    <option value="vimeo" <?php selected( $video['video_provider'] ?? '', 'vimeo' ); ?>>
+                                        Vimeo
+                                    </option>
+                                    <option value="custom" <?php selected( $video['video_provider'] ?? '', 'custom' ); ?>>
+                                        <?php esc_html_e( 'Vlastní', 'saw-wap' ); ?>
+                                    </option>
+                                </select>
+                                <p class="description">
+                                    <?php esc_html_e( 'Ponechte "Automaticky" pro auto-detekci z URL.', 'saw-wap' ); ?>
+                                </p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th scope="row">
+                                <label for="sawwap_video_duration_<?php echo esc_attr( (string) $index ); ?>">
+                                    <?php esc_html_e( 'Délka videa (minuty)', 'saw-wap' ); ?>
+                                </label>
+                            </th>
+                            <td>
+                                <input type="number" 
+                                       id="sawwap_video_duration_<?php echo esc_attr( (string) $index ); ?>"
+                                       name="sawwap_videos[<?php echo esc_attr( (string) $index ); ?>][video_duration]"
+                                       value="<?php echo esc_attr( (string) ( $video['video_duration'] ?? 0 ) ); ?>"
+                                       min="0"
+                                       step="1"
+                                       class="small-text" />
+                                <p class="description">
+                                    <?php esc_html_e( 'Přibližná délka v minutách (pro informaci uživatelů).', 'saw-wap' ); ?>
+                                </p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th scope="row">
+                                <label for="sawwap_video_description_<?php echo esc_attr( (string) $index ); ?>">
+                                    <?php esc_html_e( 'Popis lekce', 'saw-wap' ); ?>
+                                </label>
+                            </th>
+                            <td>
+                                <textarea id="sawwap_video_description_<?php echo esc_attr( (string) $index ); ?>"
+                                          name="sawwap_videos[<?php echo esc_attr( (string) $index ); ?>][video_description]"
+                                          rows="3"
+                                          class="large-text"><?php echo esc_textarea( $video['video_description'] ?? '' ); ?></textarea>
+                                <p class="description">
+                                    <?php esc_html_e( 'Krátký popis co se uživatel naučí v této lekci.', 'saw-wap' ); ?>
+                                </p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th scope="row">
+                                <?php esc_html_e( 'Možnosti', 'saw-wap' ); ?>
+                            </th>
+                            <td>
+                                <label for="sawwap_is_free_<?php echo esc_attr( (string) $index ); ?>">
+                                    <input type="checkbox" 
+                                           id="sawwap_is_free_<?php echo esc_attr( (string) $index ); ?>"
+                                           name="sawwap_videos[<?php echo esc_attr( (string) $index ); ?>][is_free]"
+                                           value="1"
+                                           <?php checked( ! empty( $video['is_free'] ) ); ?> />
+                                    <?php esc_html_e( 'Toto video je ZDARMA (preview)', 'saw-wap' ); ?>
+                                </label>
+                                <p class="description">
+                                    <?php esc_html_e( 'Zdarma videa jsou přístupná bez nákupu (ideální pro první lekci jako ukázka).', 'saw-wap' ); ?>
+                                </p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <?php
+    }
+
+    /**
+     * Get empty video template.
+     *
+     * @return array<string,mixed>
+     */
+    private static function get_empty_video_template(): array {
+        return [
+            'id'                => '',
+            'video_index'       => 0,
+            'video_title'       => '',
+            'video_url'         => '',
+            'video_provider'    => '',
+            'video_duration'    => 0,
+            'video_description' => '',
+            'lesson_order'      => 0,
+            'is_free'           => 0,
+        ];
+    }
+
+    /**
+     * Save video meta box data.
+     *
+     * @param int      $post_id Post ID.
+     * @param \WP_Post $post    Post object.
+     */
+    public static function save_video_meta_box( int $post_id, \WP_Post $post ): void {
+        // Ověříme že jde o produkt
+        if ( 'product' !== $post->post_type ) {
+            return;
+        }
+
+        // Ověříme nonce
+        if ( ! isset( $_POST['sawwap_videos_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['sawwap_videos_nonce'] ) ), 'sawwap_save_videos' ) ) {
+            return;
+        }
+
+        // Ověříme oprávnění
+        if ( ! current_user_can( 'edit_post', $post_id ) ) {
+            return;
+        }
+
+        // Prevence autosave
+        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+            return;
+        }
+
+        // Získáme videa z POST
+        $videos_raw = isset( $_POST['sawwap_videos'] ) && is_array( $_POST['sawwap_videos'] ) 
+            ? wp_unslash( $_POST['sawwap_videos'] ) 
+            : [];
+
+        // Validace a sanitizace
+        $videos = [];
+        foreach ( $videos_raw as $index => $video_raw ) {
+            if ( ! is_array( $video_raw ) ) {
+                continue;
+            }
+
+            $video = self::sanitize_video_data( $video_raw );
+
+            // Přeskočit pokud chybí povinná pole
+            if ( empty( $video['video_title'] ) || empty( $video['video_url'] ) ) {
+                continue;
+            }
+
+            $videos[] = $video;
+        }
+
+        // Uložit do DB
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'saw_video_metadata';
+
+        // Nejdříve smažeme všechna stará videa pro tento produkt
+        $wpdb->delete( $table_name, [ 'product_id' => $post_id ], [ '%d' ] );
+
+        // Pak vložíme nová/aktualizovaná videa
+        foreach ( $videos as $index => $video ) {
+            $wpdb->insert(
+                $table_name,
+                [
+                    'product_id'        => $post_id,
+                    'video_index'       => $index,
+                    'video_title'       => $video['video_title'],
+                    'video_url'         => $video['video_url'],
+                    'video_provider'    => $video['video_provider'],
+                    'video_duration'    => $video['video_duration'],
+                    'video_description' => $video['video_description'],
+                    'lesson_order'      => $video['lesson_order'],
+                    'is_free'           => $video['is_free'],
+                ],
+                [ '%d', '%d', '%s', '%s', '%s', '%d', '%s', '%d', '%d' ]
+            );
+        }
+
+        // Log pro debug (pokud je WP_DEBUG zapnuté)
+        if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+            error_log( sprintf( 'SAW-WAP: Saved %d videos for product ID %d', count( $videos ), $post_id ) );
+        }
+    }
+
+    /**
+     * Sanitize video data.
+     *
+     * @param array<string,mixed> $video_raw Raw video data.
+     * @return array<string,mixed> Sanitized video data.
+     */
+    private static function sanitize_video_data( array $video_raw ): array {
+        // Sanitizace video providera
+        $provider = isset( $video_raw['video_provider'] ) ? sanitize_text_field( (string) $video_raw['video_provider'] ) : '';
+        $allowed_providers = [ 'youtube', 'vimeo', 'custom', '' ];
+        if ( ! in_array( $provider, $allowed_providers, true ) ) {
+            $provider = '';
+        }
+
+        // Auto-detekce providera z URL pokud není nastaven
+        $url = isset( $video_raw['video_url'] ) ? esc_url_raw( (string) $video_raw['video_url'] ) : '';
+        if ( empty( $provider ) && ! empty( $url ) ) {
+            if ( strpos( $url, 'youtube.com' ) !== false || strpos( $url, 'youtu.be' ) !== false ) {
+                $provider = 'youtube';
+            } elseif ( strpos( $url, 'vimeo.com' ) !== false ) {
+                $provider = 'vimeo';
+            }
+        }
+
+        return [
+            'video_title'       => isset( $video_raw['video_title'] ) ? sanitize_text_field( (string) $video_raw['video_title'] ) : '',
+            'video_url'         => $url,
+            'video_provider'    => $provider,
+            'video_duration'    => isset( $video_raw['video_duration'] ) ? absint( $video_raw['video_duration'] ) : 0,
+            'video_description' => isset( $video_raw['video_description'] ) ? sanitize_textarea_field( (string) $video_raw['video_description'] ) : '',
+            'lesson_order'      => isset( $video_raw['lesson_order'] ) ? absint( $video_raw['lesson_order'] ) : 0,
+            'is_free'           => ! empty( $video_raw['is_free'] ) ? 1 : 0,
+        ];
+    }
+
+    /**
+     * Retrieve product meta values with defaults (pro základní tab).
      *
      * @param WC_Product $product Product.
      * @return array<string,mixed>
@@ -186,38 +507,19 @@ class ProductFields {
     private static function get_product_meta( WC_Product $product ): array {
         $meta = [
             'sawwap_is_video_product' => (bool) (int) $product->get_meta( 'sawwap_is_video_product', true ),
-            'sawwap_video_provider'   => (string) $product->get_meta( 'sawwap_video_provider', true ),
-            'sawwap_video_url'        => (string) $product->get_meta( 'sawwap_video_url', true ),
-            'sawwap_video_urls'       => (string) $product->get_meta( 'sawwap_video_urls', true ),
-            'sawwap_video_duration'   => (int) $product->get_meta( 'sawwap_video_duration', true ),
             'sawwap_access_days'      => (int) $product->get_meta( 'sawwap_access_days', true ),
-            'sawwap_promo_tiers'      => (string) $product->get_meta( 'sawwap_promo_tiers', true ),
-            'sawwap_promo_until'      => (string) $product->get_meta( 'sawwap_promo_until', true ),
-            'sawwap_bundle_items'     => (string) $product->get_meta( 'sawwap_bundle_items', true ),
-            'sawwap_points_award'     => (int) $product->get_meta( 'sawwap_points_award', true ),
+            'sawwap_internal_notes'   => (string) $product->get_meta( 'sawwap_internal_notes', true ),
         ];
 
         if ( 0 === $meta['sawwap_access_days'] ) {
             $meta['sawwap_access_days'] = 365;
         }
 
-        if ( '' === $meta['sawwap_video_urls'] ) {
-            $meta['sawwap_video_urls'] = '[]';
-        }
-
-        if ( '' === $meta['sawwap_promo_tiers'] ) {
-            $meta['sawwap_promo_tiers'] = '[]';
-        }
-
-        if ( '' === $meta['sawwap_bundle_items'] ) {
-            $meta['sawwap_bundle_items'] = '[]';
-        }
-
         return $meta;
     }
 
     /**
-     * Persist product meta when saved.
+     * Persist product meta when saved (pro základní tab).
      *
      * @param WC_Product $product Product being saved.
      */
@@ -225,148 +527,11 @@ class ProductFields {
         $is_video = isset( $_POST['sawwap_is_video_product'] ) ? 'yes' === wp_unslash( $_POST['sawwap_is_video_product'] ) : false; // phpcs:ignore WordPress.Security.NonceVerification.Missing
         $product->update_meta_data( 'sawwap_is_video_product', $is_video ? 1 : 0 );
 
-        $provider = isset( $_POST['sawwap_video_provider'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['sawwap_video_provider'] ) ) : '';
-        $product->update_meta_data( 'sawwap_video_provider', self::sanitize_provider( $provider ) );
-
-        $video_url = isset( $_POST['sawwap_video_url'] ) ? (string) wp_unslash( $_POST['sawwap_video_url'] ) : '';
-        $product->update_meta_data( 'sawwap_video_url', esc_url_raw( $video_url ) );
-
-        $video_urls_raw = isset( $_POST['sawwap_video_urls'] ) ? (string) wp_unslash( $_POST['sawwap_video_urls'] ) : '';
-        $product->update_meta_data( 'sawwap_video_urls', self::sanitize_json_urls( $video_urls_raw ) );
-
-        $duration_raw = isset( $_POST['sawwap_video_duration'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['sawwap_video_duration'] ) ) : '';
-        $duration     = '' === $duration_raw ? 0 : (int) $duration_raw;
-        $product->update_meta_data( 'sawwap_video_duration', max( 0, $duration ) );
-
         $access_days_raw = isset( $_POST['sawwap_access_days'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['sawwap_access_days'] ) ) : '';
         $access_days     = '' === $access_days_raw ? 365 : (int) $access_days_raw;
         $product->update_meta_data( 'sawwap_access_days', max( 0, $access_days ) );
 
-        $promo_tiers = isset( $_POST['sawwap_promo_tiers'] ) ? (string) wp_unslash( $_POST['sawwap_promo_tiers'] ) : '';
-        $product->update_meta_data( 'sawwap_promo_tiers', self::sanitize_promo_tiers( $promo_tiers ) );
-
-        $promo_until = isset( $_POST['sawwap_promo_until'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['sawwap_promo_until'] ) ) : '';
-        $product->update_meta_data( 'sawwap_promo_until', self::sanitize_datetime( $promo_until ) );
-
-        $bundle_items = isset( $_POST['sawwap_bundle_items'] ) ? (string) wp_unslash( $_POST['sawwap_bundle_items'] ) : '';
-        $product->update_meta_data( 'sawwap_bundle_items', self::sanitize_bundle_items( $bundle_items ) );
-
-        $points_award_raw = isset( $_POST['sawwap_points_award'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['sawwap_points_award'] ) ) : '';
-        $points_award     = '' === $points_award_raw ? 0 : (int) $points_award_raw;
-        $product->update_meta_data( 'sawwap_points_award', max( 0, $points_award ) );
-    }
-
-    /**
-     * Sanitize provider value.
-     */
-    private static function sanitize_provider( string $provider ): string {
-        $allowed = [ 'youtube', 'vimeo' ];
-        return in_array( $provider, $allowed, true ) ? $provider : '';
-    }
-
-    /**
-     * Sanitize JSON array of URLs.
-     */
-    private static function sanitize_json_urls( string $raw ): string {
-        $raw = trim( $raw );
-        if ( '' === $raw ) {
-            return '[]';
-        }
-
-        $decoded = json_decode( $raw, true );
-        if ( ! is_array( $decoded ) ) {
-            return '[]';
-        }
-
-        $sanitized = [];
-        foreach ( $decoded as $url ) {
-            if ( ! is_scalar( $url ) ) {
-                continue;
-            }
-            $clean = esc_url_raw( (string) $url );
-            if ( '' !== $clean ) {
-                $sanitized[] = $clean;
-            }
-        }
-
-        return wp_json_encode( $sanitized );
-    }
-
-    /**
-     * Sanitize promo tiers.
-     */
-    private static function sanitize_promo_tiers( string $raw ): string {
-        $raw = trim( $raw );
-        if ( '' === $raw ) {
-            return '[]';
-        }
-
-        $decoded = json_decode( $raw, true );
-        if ( ! is_array( $decoded ) ) {
-            return '[]';
-        }
-
-        $sanitized = [];
-        foreach ( $decoded as $tier ) {
-            if ( ! is_array( $tier ) ) {
-                continue;
-            }
-
-            $limit = isset( $tier['limit'] ) ? (int) $tier['limit'] : 0;
-            $price = isset( $tier['price'] ) ? (float) $tier['price'] : 0.0;
-
-            if ( $limit < 0 || $price < 0 ) {
-                continue;
-            }
-
-            $sanitized[] = [
-                'limit' => $limit,
-                'price' => (float) wc_format_decimal( $price ),
-            ];
-        }
-
-        return wp_json_encode( $sanitized );
-    }
-
-    /**
-     * Sanitize datetime string.
-     */
-    private static function sanitize_datetime( string $datetime ): string {
-        $datetime = trim( $datetime );
-        if ( '' === $datetime ) {
-            return '';
-        }
-
-        $timestamp = strtotime( $datetime );
-        if ( false === $timestamp ) {
-            return '';
-        }
-
-        return gmdate( 'Y-m-d H:i:s', $timestamp );
-    }
-
-    /**
-     * Sanitize bundle items JSON array.
-     */
-    private static function sanitize_bundle_items( string $raw ): string {
-        $raw = trim( $raw );
-        if ( '' === $raw ) {
-            return '[]';
-        }
-
-        $decoded = json_decode( $raw, true );
-        if ( ! is_array( $decoded ) ) {
-            return '[]';
-        }
-
-        $sanitized = [];
-        foreach ( $decoded as $product_id ) {
-            $product_id = (int) $product_id;
-            if ( $product_id > 0 ) {
-                $sanitized[] = $product_id;
-            }
-        }
-
-        return wp_json_encode( $sanitized );
+        $internal_notes = isset( $_POST['sawwap_internal_notes'] ) ? sanitize_textarea_field( wp_unslash( (string) $_POST['sawwap_internal_notes'] ) ) : '';
+        $product->update_meta_data( 'sawwap_internal_notes', $internal_notes );
     }
 }

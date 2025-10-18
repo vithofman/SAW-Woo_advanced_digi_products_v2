@@ -1,0 +1,221 @@
+/**
+ * SAW-WAP Admin Video Repeater Styles
+ * 
+ * Styling pro admin meta box s video repeaterem
+ */
+
+/* === Wrapper === */
+.sawwap-video-repeater-wrapper {
+    background: #fff;
+    padding: 0;
+}
+
+.sawwap-video-repeater-header {
+    padding: 12px 15px;
+    border-bottom: 1px solid #dcdcde;
+    background: #f6f7f7;
+}
+
+.sawwap-video-repeater-header .description {
+    margin: 0;
+    color: #646970;
+}
+
+.sawwap-video-repeater-container {
+    padding: 15px;
+}
+
+.sawwap-video-repeater-footer {
+    padding: 12px 15px;
+    border-top: 1px solid #dcdcde;
+    background: #f6f7f7;
+    text-align: center;
+}
+
+/* === Video Row === */
+.sawwap-video-row {
+    margin-bottom: 15px;
+    border: 1px solid #dcdcde;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.04);
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.sawwap-video-row:hover {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Row Header */
+.sawwap-video-row-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    background: #f6f7f7;
+    border-bottom: 1px solid #dcdcde;
+    cursor: move;
+}
+
+.sawwap-video-handle {
+    color: #8c8f94;
+    cursor: move;
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+.sawwap-video-handle:hover {
+    color: #2271b1;
+}
+
+.sawwap-video-title-preview {
+    flex: 1;
+    font-weight: 600;
+    color: #1d2327;
+    font-size: 14px;
+}
+
+.sawwap-video-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.sawwap-video-actions .button {
+    padding: 4px 8px;
+    min-height: 0;
+    line-height: 1;
+}
+
+.sawwap-video-actions .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.sawwap-toggle-video {
+    background: transparent;
+    border: none;
+    color: #2271b1;
+}
+
+.sawwap-toggle-video:hover {
+    color: #135e96;
+}
+
+.sawwap-remove-video {
+    background: transparent;
+    border: none;
+    color: #d63638;
+}
+
+.sawwap-remove-video:hover {
+    color: #a00;
+}
+
+/* Row Content */
+.sawwap-video-row-content {
+    padding: 20px;
+}
+
+.sawwap-video-row-content .form-table {
+    margin: 0;
+}
+
+.sawwap-video-row-content .form-table th {
+    width: 200px;
+    padding: 15px 10px 15px 0;
+    vertical-align: top;
+}
+
+.sawwap-video-row-content .form-table td {
+    padding: 15px 10px;
+}
+
+.sawwap-video-row-content .form-table tr:first-child th,
+.sawwap-video-row-content .form-table tr:first-child td {
+    padding-top: 0;
+}
+
+.sawwap-video-row-content .required {
+    color: #d63638;
+}
+
+/* === Sortable === */
+.sawwap-video-placeholder {
+    height: 60px;
+    background: #f0f0f1;
+    border: 2px dashed #c3c4c7;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.ui-sortable-helper {
+    opacity: 0.7;
+}
+
+/* === Buttons === */
+.sawwap-add-video {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.sawwap-add-video .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* === Responsive === */
+@media screen and (max-width: 782px) {
+    .sawwap-video-row-content .form-table th,
+    .sawwap-video-row-content .form-table td {
+        display: block;
+        width: 100%;
+        padding: 10px 0;
+    }
+
+    .sawwap-video-row-content .form-table th {
+        padding-bottom: 5px;
+    }
+
+    .sawwap-video-row-content .form-table td {
+        padding-top: 5px;
+    }
+
+    .sawwap-video-row-header {
+        flex-wrap: wrap;
+    }
+
+    .sawwap-video-title-preview {
+        width: 100%;
+        margin: 5px 0;
+    }
+}
+
+/* === Accessibility === */
+.sawwap-video-row:focus-within {
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.sawwap-video-handle:focus,
+.sawwap-toggle-video:focus,
+.sawwap-remove-video:focus {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
+}
+
+/* === Loading State === */
+.sawwap-video-repeater-wrapper.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* === Empty State === */
+.sawwap-video-repeater-container:empty::before {
+    content: "Zatím nemáte žádná videa. Klikněte na tlačítko 'Přidat video' níže.";
+    display: block;
+    padding: 40px 20px;
+    text-align: center;
+    color: #8c8f94;
+    font-style: italic;
+}

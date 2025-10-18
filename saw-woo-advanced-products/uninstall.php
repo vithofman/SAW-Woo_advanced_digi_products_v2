@@ -13,6 +13,12 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
     exit;
 }
 
+// Load Database class
+require_once __DIR__ . '/inc/Core/Database.php';
+
+// Drop all database tables
+Core\Database::drop_tables();
+
 // Clean stored options. Keep financial/order metadata for compliance.
 $options = [
     'sawwap_points_rate',
@@ -25,6 +31,7 @@ $options = [
     'sawwap_discount_rules',
     'sawwap_cache_ttl',
     'sawwap_feature_flags',
+    'sawwap_cache_keys',
 ];
 
 foreach ( $options as $option ) {

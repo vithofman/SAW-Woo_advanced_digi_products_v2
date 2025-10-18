@@ -28,15 +28,29 @@ class Assets {
      * Register styles and scripts.
      */
     public static function register_assets(): void {
+        // Frontend CSS
         wp_register_style( 'sawwap-front', SAW_WAP_URL . 'assets/css/front.css', [], Plugin::VERSION );
+        
+        // Admin CSS
         wp_register_style( 'sawwap-admin', SAW_WAP_URL . 'assets/css/admin.css', [], Plugin::VERSION );
+        wp_register_style( 'sawwap-admin-video-repeater', SAW_WAP_URL . 'assets/css/admin-video-repeater.css', [], Plugin::VERSION );
 
+        // Frontend JS
         $deps = [ 'jquery' ];
         wp_register_script( 'sawwap-countdown', SAW_WAP_URL . 'assets/js/countdown.js', $deps, Plugin::VERSION, true );
         wp_register_script( 'sawwap-promo-progress', SAW_WAP_URL . 'assets/js/promo-progress.js', $deps, Plugin::VERSION, true );
         wp_register_script( 'sawwap-video-progress', SAW_WAP_URL . 'assets/js/video-progress.js', $deps, Plugin::VERSION, true );
         wp_register_script( 'sawwap-pdp-ui', SAW_WAP_URL . 'assets/js/pdp-ui.js', [ 'jquery' ], Plugin::VERSION, true );
+        
+        // Admin JS
         wp_register_script( 'sawwap-admin', SAW_WAP_URL . 'assets/js/admin.js', [ 'jquery' ], Plugin::VERSION, true );
+        wp_register_script( 
+            'sawwap-admin-video-repeater', 
+            SAW_WAP_URL . 'assets/js/admin-video-repeater.js', 
+            [ 'jquery', 'jquery-ui-sortable' ], // jQuery UI Sortable pro drag & drop
+            Plugin::VERSION, 
+            true 
+        );
     }
 
     /**
@@ -66,15 +80,27 @@ class Assets {
      * @param string $hook Current admin page.
      */
     public static function enqueue_admin( string $hook ): void {
+        // Pro settings stránku
         if ( 'product_page_saw-wap-settings' === $hook || 'woocommerce_page_saw-wap-settings' === $hook ) {
             wp_enqueue_style( 'sawwap-admin' );
         }
 
+        // Pro product edit stránku
         if ( 'post.php' === $hook || 'post-new.php' === $hook ) {
             $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+            
             if ( $screen && 'product' === $screen->post_type ) {
+                // Enqueue základní admin styly
                 wp_enqueue_style( 'sawwap-admin' );
-                wp_enqueue_script( 'sawwap-admin', SAW_WAP_URL . 'assets/js/admin.js', [ 'jquery' ], Plugin::VERSION, true );
+                wp_enqueue_script( 'sawwap-admin' );
+                
+                // Enqueue video repeater assets
+                wp_enqueue_style( 'sawwap-admin-video-repeater' );
+                wp_enqueue_script( 'sawwap-admin-video-repeater' );
+                
+                // WordPress už má jQuery UI Sortable, takže nemusíme nic dalšího
+                // Jen se ujistíme že je načtený
+                wp_enqueue_script( 'jquery-ui-sortable' );
             }
         }
     }

@@ -242,4 +242,27 @@ final class Plugin {
     }
 }
 
+// Initialize plugin
 Plugin::instance();
+
+/**
+ * Activation hook - create database tables.
+ */
+register_activation_hook( __FILE__, function() {
+    // Require Database class
+    require_once __DIR__ . '/inc/Core/Database.php';
+    
+    // Create tables
+    \SAW\WAP\Core\Database::create_tables();
+    
+    // Flush rewrite rules (for future watch endpoint)
+    flush_rewrite_rules();
+} );
+
+/**
+ * Deactivation hook - flush rewrite rules.
+ * NOTE: We do NOT drop tables on deactivation!
+ */
+register_deactivation_hook( __FILE__, function() {
+    flush_rewrite_rules();
+} );
