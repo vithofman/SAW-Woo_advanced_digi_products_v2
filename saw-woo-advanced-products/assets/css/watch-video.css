@@ -1,0 +1,520 @@
+/**
+ * SAW - Watch Video Page Styles
+ * 
+ * Standalone styling for watch page (Oxygen compatible).
+ * All classes prefixed with .saw- to avoid conflicts.
+ */
+
+/* === CSS Variables === */
+:root {
+	--saw-primary: #ff6b35;
+	--saw-success: #22c55e;
+	--saw-warning: #f59e0b;
+	--saw-danger: #ef4444;
+	--saw-gray-50: #f9fafb;
+	--saw-gray-100: #f3f4f6;
+	--saw-gray-200: #e5e7eb;
+	--saw-gray-300: #d1d5db;
+	--saw-gray-700: #374151;
+	--saw-gray-800: #1f2937;
+	--saw-gray-900: #111827;
+	--saw-container-width: 1200px;
+	--saw-spacing-sm: 0.5rem;
+	--saw-spacing-md: 1rem;
+	--saw-spacing-lg: 1.5rem;
+	--saw-spacing-xl: 2rem;
+	--saw-radius: 8px;
+	--saw-transition: all 0.3s ease;
+}
+
+/* === Reset & Base === */
+.saw-watch-page {
+	margin: 0;
+	padding: 0;
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+	font-size: 16px;
+	line-height: 1.6;
+	color: var(--saw-gray-900);
+	background: var(--saw-gray-50);
+}
+
+.saw-watch-page * {
+	box-sizing: border-box;
+}
+
+.saw-container {
+	max-width: var(--saw-container-width);
+	margin: 0 auto;
+	padding: 0 var(--saw-spacing-md);
+}
+
+/* === Header === */
+.saw-watch-header {
+	background: #fff;
+	border-bottom: 1px solid var(--saw-gray-200);
+	padding: var(--saw-spacing-md) 0;
+	position: sticky;
+	top: 0;
+	z-index: 100;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.saw-back-link {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--saw-spacing-sm);
+	color: var(--saw-gray-700);
+	text-decoration: none;
+	font-size: 14px;
+	font-weight: 500;
+	transition: var(--saw-transition);
+	margin-bottom: var(--saw-spacing-sm);
+}
+
+.saw-back-link:hover {
+	color: var(--saw-primary);
+}
+
+.saw-back-icon {
+	font-size: 18px;
+}
+
+.saw-breadcrumbs {
+	display: flex;
+	align-items: center;
+	gap: var(--saw-spacing-sm);
+	font-size: 14px;
+	color: var(--saw-gray-700);
+	flex-wrap: wrap;
+}
+
+.saw-breadcrumb-link {
+	color: var(--saw-gray-700);
+	text-decoration: none;
+	transition: var(--saw-transition);
+}
+
+.saw-breadcrumb-link:hover {
+	color: var(--saw-primary);
+	text-decoration: underline;
+}
+
+.saw-separator {
+	color: var(--saw-gray-300);
+}
+
+.saw-current-page {
+	color: var(--saw-gray-900);
+	font-weight: 500;
+}
+
+/* === Video Section === */
+.saw-video-section {
+	background: #000;
+	padding: 0;
+}
+
+.saw-video-wrapper {
+	position: relative;
+	padding-bottom: 56.25%; /* 16:9 aspect ratio */
+	height: 0;
+	overflow: hidden;
+	max-width: 100%;
+}
+
+.saw-video-wrapper iframe {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border: 0;
+}
+
+.saw-video-error {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 400px;
+	background: var(--saw-gray-100);
+	color: var(--saw-gray-700);
+	text-align: center;
+	padding: var(--saw-spacing-xl);
+}
+
+/* === Navigation Buttons === */
+.saw-navigation {
+	background: #fff;
+	border-bottom: 1px solid var(--saw-gray-200);
+	padding: var(--saw-spacing-lg) 0;
+}
+
+.saw-nav-buttons {
+	display: flex;
+	justify-content: space-between;
+	gap: var(--saw-spacing-md);
+}
+
+.saw-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--saw-spacing-sm);
+	padding: 12px 24px;
+	border: 2px solid var(--saw-primary);
+	border-radius: var(--saw-radius);
+	background: #fff;
+	color: var(--saw-primary);
+	font-size: 15px;
+	font-weight: 600;
+	text-decoration: none;
+	cursor: pointer;
+	transition: var(--saw-transition);
+	white-space: nowrap;
+}
+
+.saw-btn:hover:not(:disabled) {
+	background: var(--saw-primary);
+	color: #fff;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.saw-btn:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+	border-color: var(--saw-gray-300);
+	color: var(--saw-gray-300);
+}
+
+.saw-btn-icon {
+	font-size: 18px;
+	line-height: 1;
+}
+
+/* === Content Layout === */
+.saw-content-area {
+	padding: var(--saw-spacing-xl) 0;
+}
+
+.saw-layout {
+	display: grid;
+	grid-template-columns: 1fr 350px;
+	gap: var(--saw-spacing-xl);
+	align-items: start;
+}
+
+/* === Main Content === */
+.saw-main {
+	background: #fff;
+	border-radius: var(--saw-radius);
+	padding: var(--saw-spacing-xl);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.saw-video-title {
+	font-size: 28px;
+	font-weight: 700;
+	color: var(--saw-gray-900);
+	margin: 0 0 var(--saw-spacing-lg);
+	line-height: 1.3;
+}
+
+.saw-video-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--saw-spacing-lg);
+	margin-bottom: var(--saw-spacing-xl);
+	padding-bottom: var(--saw-spacing-lg);
+	border-bottom: 1px solid var(--saw-gray-200);
+}
+
+.saw-meta-item {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--saw-spacing-sm);
+	font-size: 14px;
+	font-weight: 500;
+	padding: 8px 16px;
+	border-radius: 999px;
+	background: var(--saw-gray-100);
+	color: var(--saw-gray-700);
+}
+
+.saw-meta-icon {
+	font-size: 16px;
+}
+
+.saw-meta-countdown.saw-countdown-ok {
+	background: #dcfce7;
+	color: #166534;
+}
+
+.saw-meta-countdown.saw-countdown-warning {
+	background: #fef3c7;
+	color: #92400e;
+}
+
+.saw-meta-countdown.saw-countdown-critical {
+	background: #fee2e2;
+	color: #991b1b;
+}
+
+/* === Progress Bar === */
+.saw-progress-section {
+	margin-bottom: var(--saw-spacing-xl);
+}
+
+.saw-progress-label {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--saw-gray-700);
+	margin-bottom: var(--saw-spacing-sm);
+}
+
+.saw-progress-bar {
+	height: 8px;
+	background: var(--saw-gray-200);
+	border-radius: 999px;
+	overflow: hidden;
+}
+
+.saw-progress-fill {
+	height: 100%;
+	background: linear-gradient(90deg, var(--saw-success), var(--saw-primary));
+	border-radius: 999px;
+	transition: width 0.5s ease;
+}
+
+/* === Video Description === */
+.saw-video-description {
+	margin-top: var(--saw-spacing-xl);
+}
+
+.saw-description-title {
+	font-size: 20px;
+	font-weight: 600;
+	color: var(--saw-gray-900);
+	margin-bottom: var(--saw-spacing-md);
+}
+
+.saw-description-content {
+	font-size: 15px;
+	line-height: 1.7;
+	color: var(--saw-gray-700);
+}
+
+.saw-description-content p {
+	margin-bottom: var(--saw-spacing-md);
+}
+
+.saw-description-content p:last-child {
+	margin-bottom: 0;
+}
+
+/* === Sidebar === */
+.saw-sidebar {
+	background: #fff;
+	border-radius: var(--saw-radius);
+	padding: var(--saw-spacing-xl);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	position: sticky;
+	top: 80px;
+	max-height: calc(100vh - 100px);
+	overflow-y: auto;
+}
+
+.saw-sidebar-title {
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--saw-gray-900);
+	margin: 0 0 var(--saw-spacing-lg);
+	display: flex;
+	align-items: center;
+	gap: var(--saw-spacing-sm);
+}
+
+.saw-sidebar-icon {
+	font-size: 20px;
+}
+
+.saw-lesson-items {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.saw-lesson-item {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--saw-spacing-sm);
+	padding: var(--saw-spacing-md);
+	margin-bottom: var(--saw-spacing-sm);
+	border-radius: var(--saw-radius);
+	transition: var(--saw-transition);
+}
+
+.saw-lesson-item:hover {
+	background: var(--saw-gray-50);
+}
+
+.saw-lesson-item.saw-current {
+	background: #fff7ed;
+	border-left: 4px solid var(--saw-primary);
+}
+
+.saw-lesson-item.saw-completed .saw-icon-completed {
+	color: var(--saw-success);
+}
+
+.saw-icon {
+	flex-shrink: 0;
+	width: 20px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 16px;
+	line-height: 1;
+	margin-top: 2px;
+}
+
+.saw-icon-completed {
+	color: var(--saw-success);
+	font-weight: bold;
+}
+
+.saw-icon-current {
+	color: var(--saw-primary);
+}
+
+.saw-icon-pending {
+	color: var(--saw-gray-300);
+}
+
+.saw-lesson-link {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	text-decoration: none;
+	color: var(--saw-gray-900);
+	transition: var(--saw-transition);
+}
+
+.saw-lesson-link:hover {
+	color: var(--saw-primary);
+}
+
+.saw-lesson-title {
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 1.4;
+}
+
+.saw-lesson-duration {
+	font-size: 12px;
+	color: var(--saw-gray-500);
+}
+
+.saw-lesson-locked {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	gap: var(--saw-spacing-sm);
+	color: var(--saw-gray-400);
+	font-size: 14px;
+}
+
+.saw-lock-icon {
+	font-size: 16px;
+}
+
+/* === Responsive === */
+@media (max-width: 1024px) {
+	.saw-layout {
+		grid-template-columns: 1fr;
+	}
+	
+	.saw-sidebar {
+		position: static;
+		max-height: none;
+	}
+}
+
+@media (max-width: 768px) {
+	.saw-container {
+		padding: 0 var(--saw-spacing-sm);
+	}
+	
+	.saw-video-title {
+		font-size: 22px;
+	}
+	
+	.saw-nav-buttons {
+		flex-direction: column;
+	}
+	
+	.saw-btn {
+		width: 100%;
+		justify-content: center;
+	}
+	
+	.saw-video-meta {
+		flex-direction: column;
+		gap: var(--saw-spacing-sm);
+	}
+	
+	.saw-meta-item {
+		width: 100%;
+		justify-content: center;
+	}
+	
+	.saw-main,
+	.saw-sidebar {
+		padding: var(--saw-spacing-lg);
+	}
+	
+	.saw-breadcrumbs {
+		font-size: 12px;
+	}
+	
+	.saw-back-text {
+		display: none;
+	}
+}
+
+/* === Accessibility === */
+.saw-watch-page :focus-visible {
+	outline: 2px solid var(--saw-primary);
+	outline-offset: 2px;
+}
+
+/* Screen reader only */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
+}
+
+/* === Print Styles === */
+@media print {
+	.saw-watch-header,
+	.saw-navigation,
+	.saw-sidebar {
+		display: none;
+	}
+	
+	.saw-layout {
+		grid-template-columns: 1fr;
+	}
+	
+	.saw-video-wrapper {
+		display: none;
+	}
+}
