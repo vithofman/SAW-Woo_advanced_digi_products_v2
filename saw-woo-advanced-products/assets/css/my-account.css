@@ -1,15 +1,11 @@
 /* ==========================================================================
-   SAW - My Account CSS (OXYGEN COMPATIBLE)
+   SAW - My Account Styles
    ========================================================================== */
 
 /**
- * DŮLEŽITÉ PRAVIDLO:
- * - NEPOUŽÍVÁME body.oxygen-body selectory
- * - NEPOUŽÍVÁME .ct-section nebo .oxy-post-content selectory
- * - Pouze vlastní .saw-* třídy
- * - Oxygen si udržuje vlastní wrappery
+ * DŮLEŽITÉ: Nepoužíváme žádné body.oxygen-body nebo .ct-section selectory!
+ * Oxygen si udržuje vlastní wrappery, my jen stylujeme obsah shortcodu.
  */
-
 
 /* ==========================================================================
    MY ACCOUNT - MAIN LAYOUT
@@ -21,8 +17,8 @@
 .saw-my-account-wrapper {
 	width: 100%;
 	max-width: 1400px;
-	margin: 40px auto;
-	padding: 0 20px;
+	margin: 0 auto;
+	padding: 40px 20px;
 	box-sizing: border-box;
 }
 
@@ -61,7 +57,7 @@
  * Mobile Toggle Button
  */
 .saw-my-account__mobile-toggle {
-	display: none; /* Hidden on desktop */
+	display: none;
 	align-items: center;
 	gap: 8px;
 	padding: 10px 16px;
@@ -178,10 +174,9 @@
 	text-decoration: underline;
 }
 
-/* ==========================================================================
-   ERROR MESSAGE
-   ========================================================================== */
-
+/**
+ * Error Styles
+ */
 .saw-error {
 	padding: 20px;
 	background: #fee;
@@ -190,6 +185,18 @@
 	color: #c00;
 	font-weight: 600;
 	margin: 20px 0;
+}
+
+/**
+ * Login Required Box
+ */
+.saw-login-required {
+	padding: 80px 20px;
+	text-align: center;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	border-radius: 16px;
+	margin: 40px 0;
+	box-shadow: 0 10px 40px rgba(0,0,0,0.1);
 }
 
 /* ==========================================================================
@@ -287,16 +294,10 @@
    DASHBOARD PAGE
    ========================================================================== */
 
-/**
- * Dashboard Container
- */
 .saw-dashboard {
 	width: 100%;
 }
 
-/**
- * Dashboard Header
- */
 .saw-dashboard__header {
 	margin-bottom: 32px;
 }
@@ -316,9 +317,6 @@
 	line-height: 1.5;
 }
 
-/**
- * Stats Grid
- */
 .saw-dashboard__stats {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -332,12 +330,11 @@
 	padding: 24px;
 	border-radius: 12px;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-	transition: transform 0.2s ease, box-shadow 0.2s ease;
+	transition: transform 0.2s ease;
 }
 
 .saw-stat-card:hover {
 	transform: translateY(-4px);
-	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
 .saw-stat-card__icon {
@@ -359,121 +356,10 @@
 	margin: 0;
 }
 
-/**
- * Quick Actions
- */
-.saw-dashboard__actions {
-	margin-bottom: 32px;
-}
-
-.saw-dashboard__actions-title {
-	font-size: 20px;
-	font-weight: 600;
-	margin: 0 0 16px 0;
-	color: #1a1a1a;
-}
-
-.saw-quick-actions {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-	gap: 16px;
-}
-
-.saw-action-card {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	padding: 24px;
-	background: #fff;
-	border: 2px solid #e0e0e0;
-	border-radius: 12px;
-	text-align: center;
-	text-decoration: none;
-	transition: all 0.2s ease;
-	color: #333;
-}
-
-.saw-action-card:hover {
-	border-color: #0073aa;
-	box-shadow: 0 4px 12px rgba(0, 115, 170, 0.15);
-	transform: translateY(-2px);
-	color: #0073aa;
-}
-
-.saw-action-card__icon {
-	font-size: 36px;
-	margin-bottom: 12px;
-}
-
-.saw-action-card__title {
-	font-size: 15px;
-	font-weight: 600;
-	margin: 0;
-}
-
-/**
- * Recent Activity
- */
-.saw-dashboard__recent {
-	margin-top: 32px;
-}
-
-.saw-dashboard__recent-title {
-	font-size: 20px;
-	font-weight: 600;
-	margin: 0 0 16px 0;
-	color: #1a1a1a;
-}
-
-.saw-activity-list {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-}
-
-.saw-activity-item {
-	display: flex;
-	align-items: center;
-	gap: 16px;
-	padding: 16px;
-	border-bottom: 1px solid #e0e0e0;
-}
-
-.saw-activity-item:last-child {
-	border-bottom: none;
-}
-
-.saw-activity-item__icon {
-	font-size: 24px;
-	min-width: 24px;
-	text-align: center;
-}
-
-.saw-activity-item__content {
-	flex: 1;
-}
-
-.saw-activity-item__title {
-	font-size: 15px;
-	font-weight: 600;
-	margin: 0 0 4px 0;
-	color: #333;
-}
-
-.saw-activity-item__date {
-	font-size: 13px;
-	color: #999;
-	margin: 0;
-}
-
 /* ==========================================================================
-   RESPONSIVE - MAIN LAYOUT
+   RESPONSIVE
    ========================================================================== */
 
-/**
- * Tablet (768px - 1023px)
- */
 @media (min-width: 768px) and (max-width: 1023px) {
 	.saw-my-account__grid {
 		grid-template-columns: 240px 1fr;
@@ -489,13 +375,9 @@
 	}
 }
 
-/**
- * Mobile (< 768px)
- */
 @media (max-width: 767px) {
 	.saw-my-account-wrapper {
-		padding: 0 15px;
-		margin: 20px auto;
+		padding: 20px 15px;
 	}
 	
 	.saw-my-account__header {
@@ -508,18 +390,15 @@
 		font-size: 24px;
 	}
 	
-	/* Show mobile toggle */
 	.saw-my-account__mobile-toggle {
 		display: flex;
 	}
 	
-	/* Single column layout */
 	.saw-my-account__grid {
 		grid-template-columns: 1fr;
 		gap: 0;
 	}
 	
-	/* Sidebar - hidden by default on mobile */
 	.saw-my-account__sidebar {
 		position: fixed;
 		top: 0;
@@ -533,30 +412,20 @@
 		box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
 	}
 	
-	/* Sidebar open state */
 	.saw-my-account__sidebar--open {
 		left: 0;
 	}
 	
-	/* Content padding */
 	.saw-my-account__content {
 		padding: 20px;
 		border-radius: 8px;
 	}
 	
-	/* Stats grid */
 	.saw-dashboard__stats {
 		grid-template-columns: 1fr;
 		gap: 16px;
 	}
 	
-	/* Quick actions */
-	.saw-quick-actions {
-		grid-template-columns: repeat(2, 1fr);
-		gap: 12px;
-	}
-	
-	/* Footer */
 	.saw-my-account__footer {
 		margin-top: 30px;
 	}

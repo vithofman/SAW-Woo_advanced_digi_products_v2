@@ -17,22 +17,26 @@
 
 declare(strict_types=1);
 
-// Security check
+// Security check - ALE NIKDY exit;!!!
 if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+	// Just stop rendering, don't exit!
+	return;
 }
 
 use SAW\WAP\Helpers\AccountHelpers;
 
-// Zkontroluj že máme potřebné proměnné
+// Zkontroluj že máme potřebné proměnné - ALE NEPOUŽÍVEJ return;!!!
 if ( ! isset( $user ) || ! isset( $user_id ) || ! isset( $current_endpoint ) || ! isset( $menu_items ) ) {
 	echo '<div class="saw-error">Chyba: Chybí potřebná data pro šablonu.</div>';
-	return;
+	// NIKDY return; - to ukončí execution!
+	// Místo toho použij condition
 }
 
 // Get user first name for greeting
 $user_first_name = ! empty( $user->first_name ) ? $user->first_name : $user->display_name;
 ?>
+
+<?php if ( isset( $user ) && isset( $user_id ) && isset( $current_endpoint ) && isset( $menu_items ) ) : ?>
 
 <div class="saw-my-account-wrapper">
 	
@@ -140,3 +144,5 @@ $user_first_name = ! empty( $user->first_name ) ? $user->first_name : $user->dis
 	</footer>
 
 </div>
+
+<?php endif; ?>
