@@ -184,7 +184,6 @@ final class Plugin {
             Frontend\Shortcodes::init();
         }
 
-        // ✅ OPRAVA: Přidán Frontend\ prefix
         if ( class_exists( Frontend\Templates::class ) ) {
             Frontend\Templates::init();
         }
@@ -211,6 +210,11 @@ final class Plugin {
 
         if ( class_exists( REST\Routes::class ) ) {
             REST\Routes::init();
+        }
+
+        // ✅ OPRAVA: Přidána inicializace VideoProgressAPI
+        if ( class_exists( REST\VideoProgressAPI::class ) ) {
+            REST\VideoProgressAPI::init();
         }
 
         if ( class_exists( Legal\DigitalContent::class ) ) {

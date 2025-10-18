@@ -15,6 +15,7 @@
 	--saw-gray-100: #f3f4f6;
 	--saw-gray-200: #e5e7eb;
 	--saw-gray-300: #d1d5db;
+	--saw-gray-500: #6b7280;
 	--saw-gray-700: #374151;
 	--saw-gray-800: #1f2937;
 	--saw-gray-900: #111827;
@@ -259,9 +260,13 @@
 	color: #991b1b;
 }
 
-/* === Progress Bar === */
+/* === ✅ OPRAVA: Progress Bar (Hlavní sekce) === */
 .saw-progress-section {
+	background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+	padding: var(--saw-spacing-lg);
+	border-radius: var(--saw-radius);
 	margin-bottom: var(--saw-spacing-xl);
+	border: 2px solid #bae6fd;
 }
 
 .saw-progress-label {
@@ -271,11 +276,19 @@
 	margin-bottom: var(--saw-spacing-sm);
 }
 
+.saw-progress-text {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--saw-gray-700);
+	margin-bottom: var(--saw-spacing-sm);
+}
+
 .saw-progress-bar {
-	height: 8px;
-	background: var(--saw-gray-200);
+	height: 12px;
+	background: rgba(255, 255, 255, 0.8);
 	border-radius: 999px;
 	overflow: hidden;
+	box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .saw-progress-fill {
@@ -283,6 +296,7 @@
 	background: linear-gradient(90deg, var(--saw-success), var(--saw-primary));
 	border-radius: 999px;
 	transition: width 0.5s ease;
+	box-shadow: 0 2px 4px rgba(16, 185, 129, 0.4);
 }
 
 /* === Video Description === */
@@ -429,6 +443,78 @@
 	font-size: 16px;
 }
 
+/* === ✅ OPRAVA: Video Progress (Sidebar) === */
+.saw-lesson-progress {
+	margin-top: 8px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.saw-lesson-progress-bar {
+	flex: 1;
+	height: 6px;
+	background: var(--saw-gray-200);
+	border-radius: 999px;
+	overflow: hidden;
+}
+
+.saw-lesson-progress-fill {
+	height: 100%;
+	background: linear-gradient(90deg, var(--saw-success), var(--saw-primary));
+	border-radius: 999px;
+	transition: width 0.3s ease;
+}
+
+.saw-lesson-progress-text {
+	font-size: 11px;
+	color: var(--saw-gray-700);
+	font-weight: 600;
+	min-width: 35px;
+	text-align: right;
+}
+
+/* === ✅ OPRAVA: Notifications === */
+.saw-notification {
+	position: fixed;
+	top: 80px;
+	right: 20px;
+	padding: 16px 24px;
+	border-radius: var(--saw-radius);
+	font-size: 15px;
+	font-weight: 500;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	z-index: 10000;
+	min-width: 300px;
+	animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+	from {
+		transform: translateX(400px);
+		opacity: 0;
+	}
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
+}
+
+.saw-notification-success {
+	background: var(--saw-success);
+	color: #fff;
+}
+
+.saw-notification-error {
+	background: var(--saw-danger);
+	color: #fff;
+}
+
+.saw-notification-warning {
+	background: var(--saw-warning);
+	color: #fff;
+}
+
 /* === Responsive === */
 @media (max-width: 1024px) {
 	.saw-layout {
@@ -481,6 +567,12 @@
 	.saw-back-text {
 		display: none;
 	}
+	
+	.saw-notification {
+		left: 20px;
+		right: 20px;
+		min-width: auto;
+	}
 }
 
 /* === Accessibility === */
@@ -519,82 +611,21 @@
 	}
 }
 
-
-/* === Video Progress (Sidebar) === */
-.saw-lesson-progress {
-	margin-top: 8px;
-	display: none;
+/* === Scrollbar styling pro outline === */
+.saw-sidebar::-webkit-scrollbar {
+	width: 8px;
 }
 
-.saw-lesson-progress-bar {
-	height: 4px;
-	background: var(--saw-gray-200);
-	border-radius: 999px;
-	overflow: hidden;
-	margin-bottom: 4px;
+.saw-sidebar::-webkit-scrollbar-track {
+	background: var(--saw-gray-100);
+	border-radius: 4px;
 }
 
-.saw-lesson-progress-fill {
-	height: 100%;
-	background: linear-gradient(90deg, var(--saw-success), var(--saw-primary));
-	border-radius: 999px;
-	transition: width 0.3s ease;
+.saw-sidebar::-webkit-scrollbar-thumb {
+	background: var(--saw-gray-300);
+	border-radius: 4px;
 }
 
-.saw-lesson-progress-text {
-	font-size: 11px;
-	color: var(--saw-gray-700);
-	font-weight: 600;
-}
-
-/* === Notifications === */
-.saw-notification {
-	position: fixed;
-	top: 20px;
-	right: 20px;
-	padding: 16px 24px;
-	background: #fff;
-	border-radius: 8px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-	z-index: 9999;
-	display: none;
-	max-width: 400px;
-	font-size: 14px;
-	line-height: 1.5;
-}
-
-.saw-notification-error {
-	border-left: 4px solid var(--saw-danger);
-	color: var(--saw-danger);
-}
-
-.saw-notification-success {
-	border-left: 4px solid var(--saw-success);
-	color: var(--saw-success);
-}
-
-/* Animation */
-@keyframes slideIn {
-	from {
-		transform: translateX(400px);
-		opacity: 0;
-	}
-	to {
-		transform: translateX(0);
-		opacity: 1;
-	}
-}
-
-.saw-notification {
-	animation: slideIn 0.3s ease-out;
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-	.saw-notification {
-		top: 10px;
-		right: 10px;
-		left: 10px;
-		max-width: none;
-	}
+.saw-sidebar::-webkit-scrollbar-thumb:hover {
+	background: var(--saw-gray-700);
 }
