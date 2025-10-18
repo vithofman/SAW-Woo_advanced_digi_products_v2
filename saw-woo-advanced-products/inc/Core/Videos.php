@@ -77,27 +77,33 @@ class Videos {
 	}
 
 	/**
-	 * Handle watch page template redirect.
-	 *
-	 * Tento hook se spustí před načtením jakéhokoliv template.
-	 * Pokud detekujeme watch request, převezmeme kontrolu.
+	 * Handle watch page template redirect (DEBUG VERZE S VÝPISY).
 	 */
 	public static function watch_template_redirect(): void {
+		echo '<div style="background:#ffeb3b;color:#000;padding:15px;margin:10px;border:2px solid #f57c00;font-family:monospace;font-size:14px;"><strong>SAW DEBUG 1:</strong> watch_template_redirect called</div>';
+
 		// Získat token z query var
+		echo '<div style="background:#ffeb3b;color:#000;padding:15px;margin:10px;border:2px solid #f57c00;font-family:monospace;font-size:14px;"><strong>SAW DEBUG 2:</strong> About to get query var</div>';
+
 		$token = get_query_var( 'saw_watch_token', '' );
+
+		echo '<div style="background:#ffeb3b;color:#000;padding:15px;margin:10px;border:2px solid #f57c00;font-family:monospace;font-size:14px;"><strong>SAW DEBUG 3:</strong> token = ' . esc_html( $token ) . '</div>';
+
+		echo '<div style="background:#ffeb3b;color:#000;padding:15px;margin:10px;border:2px solid #f57c00;font-family:monospace;font-size:14px;"><strong>SAW DEBUG 4:</strong> About to check if empty</div>';
 
 		// Pokud není watch request → return (normální WP flow)
 		if ( empty( $token ) ) {
+			echo '<div style="background:#f44336;color:#fff;padding:15px;margin:10px;border:2px solid #b71c1c;font-family:monospace;font-size:14px;"><strong>SAW DEBUG 5:</strong> Token is EMPTY! Exiting...</div>';
 			return;
 		}
 
-		self::log_info( 'Watch request detected', [ 'token' => substr( $token, 0, 16 ) . '...' ] );
+		echo '<div style="background:#4caf50;color:#fff;padding:15px;margin:10px;border:2px solid #2e7d32;font-family:monospace;font-size:14px;"><strong>SAW DEBUG 6:</strong> Token not empty, continuing...</div>';
 
-		// --- SECURITY CHECKS ---
+		echo '<div style="background:#2196f3;color:#fff;padding:15px;margin:10px;border:2px solid #1565c0;font-family:monospace;font-size:14px;"><strong>SAW DEBUG 7:</strong> Checking if user logged in...</div>';
 
 		// 1. Musí být přihlášený uživatel
 		if ( ! is_user_logged_in() ) {
-			self::log_debug( 'User not logged in, redirecting to login' );
+			echo '<div style="background:#f44336;color:#fff;padding:15px;margin:10px;border:2px solid #b71c1c;font-family:monospace;font-size:14px;"><strong>SAW DEBUG 8:</strong> User NOT logged in</div>';
 
 			wp_safe_redirect(
 				add_query_arg(
@@ -109,130 +115,41 @@ class Videos {
 			exit;
 		}
 
+		echo '<div style="background:#4caf50;color:#fff;padding:15px;margin:10px;border:2px solid #2e7d32;font-family:monospace;font-size:14px;"><strong>SAW DEBUG 9:</strong> User IS logged in (ID: ' . get_current_user_id() . ')</div>';
+
+		echo '<div style="background:#2196f3;color:#fff;padding:15px;margin:10px;border:2px solid #1565c0;font-family:monospace;font-size:14px;"><strong>SAW DEBUG 10:</strong> About to get token manager...</div>';
+
 		$current_user_id = get_current_user_id();
 
 		// 2. Validovat token přes VideoTokenManager
 		try {
+			echo '<div style="background:#2196f3;color:#fff;padding:15px;margin:10px;border:2px solid #1565c0;font-family:monospace;font-size:14px;"><strong>SAW DEBUG 11:</strong> Getting token manager instance...</div>';
+
 			$token_manager = self::get_token_manager();
-			$access        = $token_manager->validateToken( $token );
+
+			echo '<div style="background:#4caf50;color:#fff;padding:15px;margin:10px;border:2px solid #2e7d32;font-family:monospace;font-size:14px;"><strong>SAW DEBUG 12:</strong> Token manager created</div>';
+
+			echo '<div style="background:#2196f3;color:#fff;padding:15px;margin:10px;border:2px solid #1565c0;font-family:monospace;font-size:14px;"><strong>SAW DEBUG 13:</strong> Validating token...</div>';
+
+			$access = $token_manager->validateToken( $token );
+
+			echo '<div style="background:#4caf50;color:#fff;padding:15px;margin:10px;border:2px solid #2e7d32;font-family:monospace;font-size:14px;"><strong>SAW DEBUG 14:</strong> Token validation completed</div>';
 
 			if ( null === $access ) {
-				self::log_debug( 'Token validation failed', [
-					'token'   => substr( $token, 0, 16 ) . '...',
-					'user_id' => $current_user_id,
-				] );
-
-				self::redirect_with_error(
-					wc_get_account_endpoint_url( 'saw-videos' ),
-					__( 'Přístup k videu byl odepřen. Token může být neplatný nebo již vypršel.', 'saw-wap' )
-				);
+				echo '<div style="background:#f44336;color:#fff;padding:15px;margin:10px;border:2px solid #b71c1c;font-family:monospace;font-size:14px;"><strong>SAW DEBUG 15:</strong> Access is NULL!</div>';
+				die( 'STOPPED AT: Access is null' );
 			}
 
-			// 3. Ověřit že token patří aktuálnímu uživateli
-			if ( (int) $access->user_id !== $current_user_id ) {
-				self::log_error( 'Token belongs to different user', [
-					'token_user_id'   => $access->user_id,
-					'current_user_id' => $current_user_id,
-					'token'           => substr( $token, 0, 16 ) . '...',
-				] );
-
-				wp_die(
-					esc_html__( 'Nemáte oprávnění k zobrazení tohoto videa.', 'saw-wap' ),
-					esc_html__( 'Neautorizovaný přístup', 'saw-wap' ),
-					[ 'response' => 403 ]
-				);
-			}
-
-			self::log_info( 'Token validated successfully', [
-				'token_id'    => $access->id,
-				'user_id'     => $access->user_id,
-				'product_id'  => $access->product_id,
-				'video_index' => $access->video_index,
-			] );
+			echo '<div style="background:#4caf50;color:#fff;padding:15px;margin:10px;border:2px solid #2e7d32;font-family:monospace;font-size:14px;"><strong>SAW DEBUG 16:</strong> Access OK!</div>';
 
 		} catch ( \Exception $e ) {
-			self::log_error( 'Token validation exception: ' . $e->getMessage() );
-
-			self::redirect_with_error(
-				wc_get_account_endpoint_url( 'saw-videos' ),
-				__( 'Nastala chyba při ověřování přístupu k videu.', 'saw-wap' )
-			);
+			echo '<div style="background:#f44336;color:#fff;padding:15px;margin:10px;border:2px solid #b71c1c;font-family:monospace;font-size:14px;"><strong>SAW DEBUG EXCEPTION:</strong> ' . esc_html( $e->getMessage() ) . '</div>';
+			die( 'STOPPED AT: Exception - ' . $e->getMessage() );
 		}
 
-		// --- DATA LOADING ---
+		echo '<div style="background:#9c27b0;color:#fff;padding:15px;margin:10px;border:2px solid #6a1b9a;font-family:monospace;font-size:14px;"><strong>SAW DEBUG 17:</strong> WE MADE IT THIS FAR!</div>';
 
-		// Načíst video metadata z DB
-		$video = self::get_video_by_token( $access );
-
-		if ( ! $video ) {
-			self::log_error( 'Video not found in database', [
-				'product_id'  => $access->product_id,
-				'video_index' => $access->video_index,
-			] );
-
-			self::redirect_with_error(
-				wc_get_account_endpoint_url( 'saw-videos' ),
-				__( 'Video nebylo nalezeno.', 'saw-wap' )
-			);
-		}
-
-		// Načíst product info
-		$product = wc_get_product( (int) $access->product_id );
-
-		if ( ! $product ) {
-			self::log_error( 'Product not found', [ 'product_id' => $access->product_id ] );
-
-			self::redirect_with_error(
-				wc_get_account_endpoint_url( 'saw-videos' ),
-				__( 'Kurz již není dostupný.', 'saw-wap' )
-			);
-		}
-
-		// Načíst všechna videa produktu (pro navigaci)
-		$all_videos = self::get_all_product_videos( (int) $access->product_id );
-
-		// Najít current index v seznamu
-		$current_index = 0;
-		foreach ( $all_videos as $idx => $vid ) {
-			if ( (int) $vid->video_index === (int) $access->video_index ) {
-				$current_index = $idx;
-				break;
-			}
-		}
-
-		// Předchozí a další video tokeny
-		$prev_token = null;
-		$next_token = null;
-
-		if ( $current_index > 0 ) {
-			$prev_video = $all_videos[ $current_index - 1 ];
-			$prev_token = self::get_user_video_token( $current_user_id, (int) $access->product_id, (int) $prev_video->video_index );
-		}
-
-		if ( $current_index < count( $all_videos ) - 1 ) {
-			$next_video = $all_videos[ $current_index + 1 ];
-			$next_token = self::get_user_video_token( $current_user_id, (int) $access->product_id, (int) $next_video->video_index );
-		}
-
-		// Progress info
-		$progress = self::get_user_progress( $current_user_id, (int) $access->product_id );
-
-		// --- SET GLOBALS PRO TEMPLATE ---
-		global $saw_watch_data;
-
-		$saw_watch_data = [
-			'access'        => $access,
-			'video'         => $video,
-			'product'       => $product,
-			'all_videos'    => $all_videos,
-			'current_index' => $current_index,
-			'prev_token'    => $prev_token,
-			'next_token'    => $next_token,
-			'progress'      => $progress,
-		];
-
-		// --- LOAD TEMPLATE ---
-		self::load_watch_template();
+		die( 'DEBUG: Manually stopping here to see how far we got' );
 	}
 
 	/**
